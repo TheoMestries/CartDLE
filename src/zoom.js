@@ -5,6 +5,8 @@ import {
   typeLabels,
 } from './config/constants.js';
 
+const STORAGE_KEY = 'cartdle-zoom-state';
+
 const FALLBACK_DESCRIPTION = 'Description indisponible pour cette carte.';
 const MAX_ZOOM = 4.5;
 const MIN_ZOOM = 1;
@@ -36,6 +38,7 @@ const cardLookup = new Map();
 const nameLookup = new Map();
 const idLookup = new Map();
 const guessedIds = new Set();
+const guessHistory = [];
 
 cards.forEach((card) => {
   const uniqueLabel = `${card.name} (${card.collectionName})`;
@@ -56,6 +59,8 @@ const targetCard = pickDailyCard(targetPool, 'zoom');
 let zoomLevel = MAX_ZOOM;
 updateZoom();
 setZoomImage(targetCard);
+
+initializeState();
 
 if (zoomImage) {
   zoomImage.addEventListener('error', () => {
@@ -106,6 +111,7 @@ if (guessForm) {
     }
 
     guessedIds.add(guessCard.id);
+    guessHistory.push(guessCard.id);
     const isCorrect = guessCard.id === targetCard.id;
     addHistoryItem(guessCard, isCorrect);
     guessInput.value = '';
@@ -117,7 +123,52 @@ if (guessForm) {
       setFeedback(`Non, ce n'est pas ${guessCard.name}.`);
       reduceZoom();
     }
+
+    persistState();
   });
+}
+
+function initializeState() {
+  const state = loadStoredState(STORAGE_KEY);
+  if (!state) {
+    return;
+  }
+
+  if (state.targetId !== targetCard.id) {
+    clearStoredState(STORAGE_KEY);
+    return;
+  }
+
+  if (typeof state.zoomLevel === 'number' && Number.isFinite(state.zoomLevel)) {
+    zoomLevel = clampZoom(state.zoomLevel);
+    updateZoom();
+  }
+
+  const storedGuesses = Array.isArray(state.guesses) ? state.guesses : [];
+  storedGuesses.forEach((id) => {
+    if (!idLookup.has(id)) {
+      return;
+    }
+    const card = idLookup.get(id);
+    guessedIds.add(card.id);
+    guessHistory.push(card.id);
+    addHistoryItem(card, card.id === targetCard.id);
+  });
+
+  const solved = Boolean(state.solved) || guessHistory.includes(targetCard.id);
+  if (solved) {
+    handleVictory(targetCard, { openModal: false });
+  }
+}
+
+function persistState() {
+  const state = {
+    targetId: targetCard.id,
+    guesses: Array.from(guessHistory),
+    solved: guessHistory.includes(targetCard.id),
+    zoomLevel,
+  };
+  saveStoredState(STORAGE_KEY, state);
 }
 
 document.addEventListener('click', (event) => {
@@ -273,18 +324,21 @@ function addHistoryItem(card, isCorrect) {
   historyList.prepend(item);
 }
 
-function handleVictory(card) {
+function handleVictory(card, { openModal = true } = {}) {
   setFeedback('Bravo ! Tu as trouvé la carte mystère.');
   revealCard(card);
-  openVictoryModal(card);
+  if (openModal) {
+    openVictoryModal(card);
+  } else {
+    setVictoryModalContent(card);
+  }
   guessInput.disabled = true;
   const submitButton = guessForm.querySelector('[type="submit"]');
   if (submitButton) {
     submitButton.disabled = true;
   }
-  if (zoomImage) {
-    zoomImage.style.transform = 'scale(1)';
-  }
+  zoomLevel = clampZoom(1);
+  updateZoom();
 }
 
 function revealCard(card) {
@@ -328,6 +382,47 @@ function getCardDescription(card) {
   }
 
   return FALLBACK_DESCRIPTION;
+}
+
+function loadStoredState(key) {
+  if (typeof window === 'undefined' || !window.localStorage) {
+    return null;
+  }
+
+  try {
+    const raw = window.localStorage.getItem(key);
+    if (!raw) {
+      return null;
+    }
+    return JSON.parse(raw);
+  } catch (error) {
+    console.warn("Impossible de charger la progression du zoom mystère.", error);
+    return null;
+  }
+}
+
+function saveStoredState(key, value) {
+  if (typeof window === 'undefined' || !window.localStorage) {
+    return;
+  }
+
+  try {
+    window.localStorage.setItem(key, JSON.stringify(value));
+  } catch (error) {
+    console.warn("Impossible de sauvegarder la progression du zoom mystère.", error);
+  }
+}
+
+function clearStoredState(key) {
+  if (typeof window === 'undefined' || !window.localStorage) {
+    return;
+  }
+
+  try {
+    window.localStorage.removeItem(key);
+  } catch (error) {
+    console.warn("Impossible de réinitialiser la progression du zoom mystère.", error);
+  }
 }
 
 function pickDailyCard(list, salt = '') {
@@ -430,6 +525,11 @@ function updateZoom() {
 }
 
 function reduceZoom() {
-  zoomLevel = Math.max(MIN_ZOOM, parseFloat((zoomLevel - ZOOM_STEP).toFixed(2)));
+  zoomLevel = clampZoom(zoomLevel - ZOOM_STEP);
   updateZoom();
+}
+
+function clampZoom(value) {
+  const limited = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, value));
+  return Number.isFinite(limited) ? parseFloat(limited.toFixed(2)) : MIN_ZOOM;
 }

@@ -6,9 +6,12 @@ import {
   seasonLabels,
 } from './config/constants.js';
 
+const STORAGE_KEY = 'cartdle-classic-state';
+
 const cardLookup = new Map();
 const nameLookup = new Map();
 const guessedIds = new Set();
+const guessHistory = [];
 
 const guessForm = document.getElementById('guess-form');
 const guessInput = document.getElementById('guess-input');
@@ -45,6 +48,8 @@ cards.forEach((card) => {
 
 const targetCard = pickDailyCard(cards);
 
+initializeState();
+
 guessInput.addEventListener('input', handleGuessInput);
 guessInput.addEventListener('focus', handleGuessFocus);
 
@@ -79,6 +84,7 @@ guessForm.addEventListener('submit', (event) => {
   }
 
   guessedIds.add(guessCard.id);
+  guessHistory.push(guessCard.id);
   addGuessRow(guessCard, targetCard);
   guessInput.value = '';
   setFeedback('');
@@ -87,10 +93,12 @@ guessForm.addEventListener('submit', (event) => {
   updateHintAvailability();
 
   if (guessCard.id === targetCard.id) {
-    revealCard(targetCard);
+    revealCard(targetCard, { showModal: true });
     setFeedback('Bravo ! Tu as trouvé la carte mystère.');
     disableHint();
   }
+
+  persistState();
 });
 
 if (hintButton) {
@@ -404,7 +412,7 @@ function pickDailyCard(list) {
   return list[index];
 }
 
-function revealCard(card) {
+function revealCard(card, { showModal = true } = {}) {
   revealName.textContent = card.name;
   revealMeta.textContent = `${seasonLabels[card.season] ?? `Saison ${card.season}`} · ${card.collectionName} · ${
     rarityLabels[card.rarity] ?? card.rarity
@@ -423,7 +431,9 @@ function revealCard(card) {
     revealImage.hidden = true;
   }
 
-  openVictoryModal();
+  if (showModal) {
+    openVictoryModal();
+  }
 }
 
 function setFeedback(message, detail = '') {
@@ -483,10 +493,8 @@ function revealHint() {
   }
 
   hintRevealed = true;
-  hintContent.textContent = targetCard.description;
-  hintContent.hidden = false;
-  hintButton.textContent = 'Indice révélé';
-  hintButton.disabled = true;
+  showHintContent();
+  persistState();
 }
 
 function disableHint() {
@@ -496,4 +504,104 @@ function disableHint() {
 
   hintButton.disabled = true;
   hintButton.hidden = true;
+}
+
+function initializeState() {
+  const state = loadStoredState(STORAGE_KEY);
+  if (!state) {
+    updateHintAvailability();
+    return;
+  }
+
+  if (state.targetId !== targetCard.id) {
+    clearStoredState(STORAGE_KEY);
+    updateHintAvailability();
+    return;
+  }
+
+  const storedGuesses = Array.isArray(state.guesses) ? state.guesses : [];
+  storedGuesses.forEach((id) => {
+    if (!idLookup.has(id)) {
+      return;
+    }
+    const card = idLookup.get(id);
+    guessedIds.add(card.id);
+    guessHistory.push(card.id);
+    addGuessRow(card, targetCard);
+  });
+
+  hintRevealed = Boolean(state.hintRevealed);
+  if (hintRevealed) {
+    showHintContent();
+  }
+
+  updateHintAvailability();
+
+  if (guessHistory.includes(targetCard.id)) {
+    revealCard(targetCard, { showModal: false });
+    setFeedback('Bravo ! Tu as trouvé la carte mystère.');
+    disableHint();
+  }
+}
+
+function showHintContent() {
+  if (!hintContent || !hintButton) {
+    return;
+  }
+
+  hintContent.textContent = targetCard.description;
+  hintContent.hidden = false;
+  hintButton.hidden = false;
+  hintButton.textContent = 'Indice révélé';
+  hintButton.disabled = true;
+}
+
+function persistState() {
+  const state = {
+    targetId: targetCard.id,
+    guesses: Array.from(guessHistory),
+    hintRevealed,
+  };
+  saveStoredState(STORAGE_KEY, state);
+}
+
+function loadStoredState(key) {
+  if (typeof window === 'undefined' || !window.localStorage) {
+    return null;
+  }
+
+  try {
+    const raw = window.localStorage.getItem(key);
+    if (!raw) {
+      return null;
+    }
+    return JSON.parse(raw);
+  } catch (error) {
+    console.warn('Impossible de charger la progression CartDLE.', error);
+    return null;
+  }
+}
+
+function saveStoredState(key, value) {
+  if (typeof window === 'undefined' || !window.localStorage) {
+    return;
+  }
+
+  try {
+    window.localStorage.setItem(key, JSON.stringify(value));
+  } catch (error) {
+    console.warn('Impossible de sauvegarder la progression CartDLE.', error);
+  }
+}
+
+function clearStoredState(key) {
+  if (typeof window === 'undefined' || !window.localStorage) {
+    return;
+  }
+
+  try {
+    window.localStorage.removeItem(key);
+  } catch (error) {
+    console.warn('Impossible de réinitialiser la progression CartDLE.', error);
+  }
 }
