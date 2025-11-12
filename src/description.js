@@ -5,6 +5,8 @@ import {
   typeLabels,
 } from './config/constants.js';
 
+const STORAGE_KEY = 'cartdle-description-state';
+
 const FALLBACK_DESCRIPTION = 'Description indisponible pour cette carte.';
 
 const descriptionElement = document.getElementById('mystery-description');
@@ -30,6 +32,7 @@ const cardLookup = new Map();
 const nameLookup = new Map();
 const idLookup = new Map();
 const guessedIds = new Set();
+const guessHistory = [];
 
 cards.forEach((card) => {
   const uniqueLabel = `${card.name} (${card.collectionName})`;
@@ -45,6 +48,8 @@ cards.forEach((card) => {
 
 const targetCard = pickDailyCard(cards, 'description');
 descriptionElement.textContent = getCardDescription(targetCard);
+
+initializeState();
 
 if (revealImage) {
   revealImage.addEventListener('error', () => {
@@ -114,6 +119,7 @@ guessForm.addEventListener('submit', (event) => {
   }
 
   guessedIds.add(guessCard.id);
+  guessHistory.push(guessCard.id);
   const isCorrect = guessCard.id === targetCard.id;
   addHistoryItem(guessCard, isCorrect);
   guessInput.value = '';
@@ -124,7 +130,46 @@ guessForm.addEventListener('submit', (event) => {
   } else {
     setFeedback(`Non, ce n'est pas ${guessCard.name}.`);
   }
+
+  persistState();
 });
+
+function initializeState() {
+  const state = loadStoredState(STORAGE_KEY);
+  if (!state) {
+    return;
+  }
+
+  if (state.targetId !== targetCard.id) {
+    clearStoredState(STORAGE_KEY);
+    return;
+  }
+
+  const storedGuesses = Array.isArray(state.guesses) ? state.guesses : [];
+  storedGuesses.forEach((id) => {
+    if (!idLookup.has(id)) {
+      return;
+    }
+    const card = idLookup.get(id);
+    guessedIds.add(card.id);
+    guessHistory.push(card.id);
+    addHistoryItem(card, card.id === targetCard.id);
+  });
+
+  const solved = Boolean(state.solved) || guessHistory.includes(targetCard.id);
+  if (solved) {
+    handleVictory(targetCard, { openModal: false });
+  }
+}
+
+function persistState() {
+  const state = {
+    targetId: targetCard.id,
+    guesses: Array.from(guessHistory),
+    solved: guessHistory.includes(targetCard.id),
+  };
+  saveStoredState(STORAGE_KEY, state);
+}
 
 function updateSuggestions() {
   if (!suggestionsContainer) {
@@ -264,10 +309,14 @@ function addHistoryItem(card, isCorrect) {
   historyList.prepend(item);
 }
 
-function handleVictory(card) {
+function handleVictory(card, { openModal = true } = {}) {
   setFeedback('Bravo ! Tu as trouvé la carte mystère.');
   revealCard(card);
-  openVictoryModal(card);
+  if (openModal) {
+    openVictoryModal(card);
+  } else {
+    setVictoryModalContent(card);
+  }
   guessInput.disabled = true;
   const submitButton = guessForm.querySelector('[type="submit"]');
   if (submitButton) {
@@ -316,6 +365,47 @@ function getCardDescription(card) {
   }
 
   return FALLBACK_DESCRIPTION;
+}
+
+function loadStoredState(key) {
+  if (typeof window === 'undefined' || !window.localStorage) {
+    return null;
+  }
+
+  try {
+    const raw = window.localStorage.getItem(key);
+    if (!raw) {
+      return null;
+    }
+    return JSON.parse(raw);
+  } catch (error) {
+    console.warn('Impossible de charger la progression de la description mystère.', error);
+    return null;
+  }
+}
+
+function saveStoredState(key, value) {
+  if (typeof window === 'undefined' || !window.localStorage) {
+    return;
+  }
+
+  try {
+    window.localStorage.setItem(key, JSON.stringify(value));
+  } catch (error) {
+    console.warn('Impossible de sauvegarder la progression de la description mystère.', error);
+  }
+}
+
+function clearStoredState(key) {
+  if (typeof window === 'undefined' || !window.localStorage) {
+    return;
+  }
+
+  try {
+    window.localStorage.removeItem(key);
+  } catch (error) {
+    console.warn('Impossible de réinitialiser la progression de la description mystère.', error);
+  }
 }
 
 function pickDailyCard(list, salt = '') {
