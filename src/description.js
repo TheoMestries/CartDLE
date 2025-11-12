@@ -18,6 +18,13 @@ const revealImage = document.getElementById('reveal-image');
 const revealName = document.getElementById('reveal-name');
 const revealMeta = document.getElementById('reveal-meta');
 const revealDescription = document.getElementById('reveal-description');
+const victoryModal = document.getElementById('victory-modal');
+const victoryClose = document.getElementById('victory-close');
+const modalOverlay = victoryModal?.querySelector('[data-close]');
+const modalRevealImage = document.getElementById('modal-reveal-image');
+const modalRevealName = document.getElementById('modal-reveal-name');
+const modalRevealMeta = document.getElementById('modal-reveal-meta');
+const modalRevealDescription = document.getElementById('modal-reveal-description');
 
 const cardLookup = new Map();
 const nameLookup = new Map();
@@ -45,6 +52,12 @@ if (revealImage) {
   });
 }
 
+if (modalRevealImage) {
+  modalRevealImage.addEventListener('error', () => {
+    modalRevealImage.hidden = true;
+  });
+}
+
 guessInput.addEventListener('input', () => {
   delete guessInput.dataset.cardId;
   updateSuggestions();
@@ -60,9 +73,20 @@ document.addEventListener('click', (event) => {
 
 document.addEventListener('keydown', (event) => {
   if (event.key === 'Escape') {
+    if (victoryModal && !victoryModal.hidden) {
+      closeVictoryModal();
+    }
     hideSuggestions();
   }
 });
+
+if (victoryClose) {
+  victoryClose.addEventListener('click', closeVictoryModal);
+}
+
+if (modalOverlay) {
+  modalOverlay.addEventListener('click', closeVictoryModal);
+}
 
 guessForm.addEventListener('submit', (event) => {
   event.preventDefault();
@@ -243,6 +267,7 @@ function addHistoryItem(card, isCorrect) {
 function handleVictory(card) {
   setFeedback('Bravo ! Tu as trouvé la carte mystère.');
   revealCard(card);
+  openVictoryModal(card);
   guessInput.disabled = true;
   const submitButton = guessForm.querySelector('[type="submit"]');
   if (submitButton) {
@@ -256,9 +281,7 @@ function revealCard(card) {
   }
 
   revealName.textContent = card.name;
-  revealMeta.textContent = `${seasonLabels[card.season] ?? `Saison ${card.season}`} · ${
-    card.collectionName
-  } · ${rarityLabels[card.rarity] ?? card.rarity} · ${typeLabels[card.type] ?? card.type}`;
+  revealMeta.textContent = getCardMeta(card);
   revealDescription.textContent = getCardDescription(card);
 
   if (card.imagePath) {
@@ -280,6 +303,12 @@ function normalize(value) {
   return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase();
 }
 
+function getCardMeta(card) {
+  return `${seasonLabels[card.season] ?? `Saison ${card.season}`} · ${card.collectionName} · ${
+    rarityLabels[card.rarity] ?? card.rarity
+  } · ${typeLabels[card.type] ?? card.type}`;
+}
+
 function getCardDescription(card) {
   const description = card.description?.trim();
   if (description) {
@@ -298,4 +327,61 @@ function pickDailyCard(list, salt = '') {
   }
   const index = hash % list.length;
   return list[index];
+}
+
+function openVictoryModal(card) {
+  if (!victoryModal) {
+    return;
+  }
+
+  setVictoryModalContent(card);
+  victoryModal.hidden = false;
+  requestAnimationFrame(() => {
+    victoryModal.classList.add('modal--open');
+    victoryClose?.focus();
+  });
+}
+
+function closeVictoryModal() {
+  if (!victoryModal || victoryModal.hidden) {
+    return;
+  }
+
+  victoryModal.classList.remove('modal--open');
+
+  const handleClose = () => {
+    victoryModal.hidden = true;
+    victoryModal.removeEventListener('transitionend', handleClose);
+    if (guessInput && !guessInput.disabled) {
+      guessInput.focus();
+    }
+  };
+
+  victoryModal.addEventListener('transitionend', handleClose);
+
+  setTimeout(() => {
+    if (!victoryModal.hidden) {
+      handleClose();
+    }
+  }, 320);
+}
+
+function setVictoryModalContent(card) {
+  if (!modalRevealName || !modalRevealMeta || !modalRevealDescription) {
+    return;
+  }
+
+  modalRevealName.textContent = card.name;
+  modalRevealMeta.textContent = getCardMeta(card);
+  modalRevealDescription.textContent = getCardDescription(card);
+
+  if (modalRevealImage && card.imagePath) {
+    modalRevealImage.hidden = false;
+    modalRevealImage.src = card.imagePath;
+    modalRevealImage.alt = card.name;
+  } else if (modalRevealImage) {
+    modalRevealImage.hidden = true;
+    modalRevealImage.removeAttribute('src');
+    modalRevealImage.alt = '';
+  }
 }
