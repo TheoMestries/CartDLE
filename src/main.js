@@ -21,19 +21,16 @@ const revealImage = document.getElementById('reveal-image');
 const revealName = document.getElementById('reveal-name');
 const revealMeta = document.getElementById('reveal-meta');
 const revealDescription = document.getElementById('reveal-description');
-const datalist = document.getElementById('card-options');
+const suggestionsContainer = document.getElementById('guess-suggestions');
 
 const rarityIndex = new Map(rarityOrder.map((value, index) => [value, index]));
+const idLookup = new Map();
 
 cards.forEach((card) => {
   const uniqueLabel = `${card.name} (${card.collectionName})`;
   const key = normalize(uniqueLabel);
   cardLookup.set(key, card);
-
-  const option = document.createElement('option');
-  option.value = uniqueLabel;
-  option.label = `${card.collectionName} · ${seasonLabels[card.season] ?? `Saison ${card.season}`}`;
-  datalist.appendChild(option);
+  idLookup.set(card.id, card);
 
   const nameKey = normalize(card.name);
   if (!nameLookup.has(nameKey)) {
@@ -44,6 +41,15 @@ cards.forEach((card) => {
 
 const targetCard = pickDailyCard(cards);
 
+guessInput.addEventListener('input', handleGuessInput);
+guessInput.addEventListener('focus', handleGuessFocus);
+
+document.addEventListener('click', (event) => {
+  if (!guessForm.contains(event.target)) {
+    hideSuggestions();
+  }
+});
+
 guessForm.addEventListener('submit', (event) => {
   event.preventDefault();
   const value = guessInput.value.trim();
@@ -52,7 +58,9 @@ guessForm.addEventListener('submit', (event) => {
     return;
   }
 
-  const resolution = resolveGuess(value);
+  const selectedId = guessInput.dataset.cardId;
+  const resolution = resolveGuess(value, selectedId);
+  delete guessInput.dataset.cardId;
   if (resolution.error) {
     setFeedback(resolution.error, resolution.detail ?? '');
     return;
@@ -62,6 +70,7 @@ guessForm.addEventListener('submit', (event) => {
   if (guessedIds.has(guessCard.id)) {
     setFeedback('Tu as déjà essayé cette carte.');
     guessInput.value = '';
+    hideSuggestions();
     return;
   }
 
@@ -69,6 +78,8 @@ guessForm.addEventListener('submit', (event) => {
   addGuessRow(guessCard, targetCard);
   guessInput.value = '';
   setFeedback('');
+  hideSuggestions();
+  updateSuggestions();
 
   if (guessCard.id === targetCard.id) {
     revealCard(targetCard);
@@ -76,13 +87,124 @@ guessForm.addEventListener('submit', (event) => {
   }
 });
 
+function handleGuessInput() {
+  delete guessInput.dataset.cardId;
+  updateSuggestions();
+}
+
+function handleGuessFocus() {
+  updateSuggestions();
+}
+
+function updateSuggestions() {
+  if (!suggestionsContainer) {
+    return;
+  }
+
+  const value = guessInput.value.trim();
+  if (value.length < 2) {
+    hideSuggestions();
+    return;
+  }
+
+  const normalizedTerm = normalize(value);
+  const matches = cards.filter((card) => {
+    if (guessedIds.has(card.id)) {
+      return false;
+    }
+    return normalize(card.name).includes(normalizedTerm);
+  });
+
+  renderSuggestions(matches.slice(0, 8));
+}
+
+function renderSuggestions(suggestions) {
+  suggestionsContainer.innerHTML = '';
+
+  if (suggestions.length === 0) {
+    suggestionsContainer.hidden = true;
+    return;
+  }
+
+  const fragment = document.createDocumentFragment();
+  suggestions.forEach((card) => {
+    fragment.appendChild(createSuggestionItem(card));
+  });
+
+  suggestionsContainer.appendChild(fragment);
+  suggestionsContainer.hidden = false;
+}
+
+function createSuggestionItem(card) {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'guess-suggestion';
+  button.dataset.cardId = card.id;
+
+  const hasImage = Boolean(card.imagePath);
+  const visual = hasImage
+    ? Object.assign(document.createElement('img'), {
+        src: card.imagePath,
+        alt: '',
+        className: 'guess-suggestion__image',
+      })
+    : Object.assign(document.createElement('span'), {
+        className: 'guess-suggestion__placeholder',
+        textContent: card.name.slice(0, 1).toUpperCase(),
+      });
+
+  const content = document.createElement('span');
+  content.className = 'guess-suggestion__content';
+
+  const name = document.createElement('span');
+  name.className = 'guess-suggestion__name';
+  name.textContent = card.name;
+  content.appendChild(name);
+
+  const meta = document.createElement('span');
+  meta.className = 'guess-suggestion__meta';
+  meta.textContent = card.typeLabel ?? '';
+  if (meta.textContent) {
+    content.appendChild(meta);
+  }
+
+  button.appendChild(visual);
+  button.appendChild(content);
+
+  button.addEventListener('mousedown', (event) => {
+    event.preventDefault();
+    selectSuggestion(card);
+  });
+
+  return button;
+}
+
+function selectSuggestion(card) {
+  guessInput.value = card.name;
+  guessInput.dataset.cardId = card.id;
+  hideSuggestions();
+  guessInput.focus();
+}
+
+function hideSuggestions() {
+  if (!suggestionsContainer) {
+    return;
+  }
+
+  suggestionsContainer.innerHTML = '';
+  suggestionsContainer.hidden = true;
+}
+
 victoryClose.addEventListener('click', closeVictoryModal);
 if (modalOverlay) {
   modalOverlay.addEventListener('click', closeVictoryModal);
 }
 document.addEventListener('keydown', (event) => {
-  if (event.key === 'Escape' && !victoryModal.hidden) {
-    closeVictoryModal();
+  if (event.key === 'Escape') {
+    if (!victoryModal.hidden) {
+      closeVictoryModal();
+    }
+    hideSuggestions();
   }
 });
 
@@ -90,7 +212,11 @@ revealImage.addEventListener('error', () => {
   revealImage.hidden = true;
 });
 
-function resolveGuess(input) {
+function resolveGuess(input, selectedId) {
+  if (selectedId && idLookup.has(selectedId)) {
+    return { card: idLookup.get(selectedId) };
+  }
+
   const normalized = normalize(input);
 
   if (cardLookup.has(normalized)) {
@@ -103,12 +229,9 @@ function resolveGuess(input) {
   }
 
   if (matches.length > 1) {
-    const suggestions = matches
-      .map((card) => `${card.name} (${card.collectionName})`)
-      .join(', ');
     return {
       error: 'Plusieurs cartes portent ce nom.',
-      detail: `Précise ta recherche : ${suggestions}.`,
+      detail: 'Sélectionne la carte correspondante dans la liste des propositions.',
     };
   }
 

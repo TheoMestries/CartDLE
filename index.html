@@ -21,16 +21,17 @@
         <form id="guess-form" autocomplete="off" class="guess-form">
           <label class="guess-form__label" for="guess-input">Nom de la carte</label>
           <div class="guess-form__controls">
-            <input
-              id="guess-input"
-              class="guess-form__input"
-              name="guess"
-              type="text"
-              list="card-options"
-              placeholder="Exemple : La Tavernière"
-              required
-            />
-            <datalist id="card-options"></datalist>
+            <div class="guess-form__input-wrapper">
+              <input
+                id="guess-input"
+                class="guess-form__input"
+                name="guess"
+                type="text"
+                placeholder="Exemple : La Tavernière"
+                required
+              />
+              <div id="guess-suggestions" class="guess-suggestions" hidden></div>
+            </div>
             <button type="submit" class="guess-form__submit">Valider</button>
           </div>
         </form>
