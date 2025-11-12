@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CartDLE</title>
+    <title>CartDLE · Zoom mystère</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
@@ -15,16 +15,24 @@
           class="layout__logo"
         />
         <nav class="layout__nav" aria-label="Modes de jeu">
-          <a class="layout__nav-link layout__nav-link--active" href="index.html">Indices classiques</a>
+          <a class="layout__nav-link" href="index.html">Indices classiques</a>
           <a class="layout__nav-link" href="description.html">Description mystère</a>
-          <a class="layout__nav-link" href="zoom.html">Zoom mystère</a>
+          <a class="layout__nav-link layout__nav-link--active" href="zoom.html">Zoom mystère</a>
         </nav>
         <p class="intro">
-          Devinez la carte mystère en vous aidant des indices sur la saison, la collection, le type,
-          la rareté et le nombre de cartes dans la collection.
+          Devinez la carte mystère à partir d'un zoom extrême sur son illustration. À chaque tentative
+          échouée, l'image se dézoome très légèrement.
         </p>
-        <p class="intro intro--secondary">Une nouvelle carte est proposée chaque jour.</p>
+        <p class="intro intro--secondary">Une nouvelle image est proposée chaque jour.</p>
       </header>
+
+      <section class="panel zoom-panel">
+        <h2 class="panel__title">Image mystère</h2>
+        <div class="zoom-viewer">
+          <img id="zoomed-image" class="zoom-viewer__image" alt="" />
+        </div>
+        <p class="zoom-viewer__hint">L'image se dévoilera un peu plus après chaque mauvaise réponse.</p>
+      </section>
 
       <section class="panel panel--form">
         <form id="guess-form" autocomplete="off" class="guess-form">
@@ -45,31 +53,22 @@
           </div>
         </form>
         <p id="feedback" class="feedback" role="status" aria-live="polite"></p>
-        <div class="hint">
-          <button id="hint-button" class="hint__button" type="button" hidden>
-            Besoin d'un indice ?
-          </button>
-          <p id="hint-content" class="hint__content" hidden></p>
-        </div>
       </section>
 
-      <section class="panel">
-        <h2 class="panel__title">Historique des tentatives</h2>
-        <div class="table-wrapper">
-          <table id="results" class="results-table">
-            <thead>
-              <tr>
-                <th scope="col" class="results-table__visual-heading">Visuel</th>
-                <th scope="col">Carte</th>
-                <th scope="col">Saison</th>
-                <th scope="col">Collection</th>
-                <th scope="col">Type</th>
-                <th scope="col">Rareté</th>
-                <th scope="col">Taille de la collection</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
+      <section class="panel" aria-live="polite">
+        <h2 class="panel__title">Tentatives</h2>
+        <ul id="guess-history" class="guess-history"></ul>
+      </section>
+
+      <section id="reveal" class="panel reveal-panel" hidden>
+        <h2 class="panel__title">Carte révélée</h2>
+        <div class="reveal">
+          <img id="reveal-image" class="reveal__image" alt="" />
+          <div class="reveal__content">
+            <h3 id="reveal-name" class="reveal__name"></h3>
+            <p id="reveal-meta" class="reveal__meta"></p>
+            <p id="reveal-description" class="reveal__description"></p>
+          </div>
         </div>
       </section>
 
@@ -88,18 +87,18 @@
           </button>
           <h2 id="victory-title" class="modal__title">Félicitations !</h2>
           <p class="modal__subtitle">Tu as trouvé la carte mystère.</p>
-          <div id="reveal" class="reveal">
-            <img id="reveal-image" class="reveal__image" alt="" />
+          <div class="reveal">
+            <img id="modal-reveal-image" class="reveal__image" alt="" />
             <div class="reveal__content">
-              <h3 id="reveal-name" class="reveal__name"></h3>
-              <p id="reveal-meta" class="reveal__meta"></p>
-              <p id="reveal-description" class="reveal__description"></p>
+              <h3 id="modal-reveal-name" class="reveal__name"></h3>
+              <p id="modal-reveal-meta" class="reveal__meta"></p>
+              <p id="modal-reveal-description" class="reveal__description"></p>
             </div>
           </div>
         </div>
       </div>
     </main>
 
-    <script type="module" src="src/main.js"></script>
+    <script type="module" src="src/zoom.js"></script>
   </body>
 </html>
