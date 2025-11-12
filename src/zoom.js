@@ -232,18 +232,6 @@ function createSuggestionItem(card) {
   button.className = 'guess-suggestion';
   button.dataset.cardId = card.id;
 
-  const hasImage = Boolean(card.imagePath);
-  const visual = hasImage
-    ? Object.assign(document.createElement('img'), {
-        src: card.imagePath,
-        alt: '',
-        className: 'guess-suggestion__image',
-      })
-    : Object.assign(document.createElement('span'), {
-        className: 'guess-suggestion__placeholder',
-        textContent: card.name.slice(0, 1).toUpperCase(),
-      });
-
   const content = document.createElement('span');
   content.className = 'guess-suggestion__content';
 
@@ -252,7 +240,6 @@ function createSuggestionItem(card) {
   name.textContent = card.name;
   content.appendChild(name);
 
-  button.appendChild(visual);
   button.appendChild(content);
 
   button.addEventListener('mousedown', (event) => {
