@@ -102,6 +102,17 @@ body {
   box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
 }
 
+.layout__nav-link--completed {
+  background: linear-gradient(135deg, rgba(250, 204, 21, 0.95), rgba(253, 224, 71, 0.85));
+  color: #1f2937;
+  box-shadow: 0 10px 20px rgba(250, 204, 21, 0.35);
+}
+
+.layout__nav-link--completed:hover {
+  background: linear-gradient(135deg, rgba(250, 204, 21, 1), rgba(234, 179, 8, 0.9));
+  color: #111827;
+}
+
 .layout__logo {
   max-width: clamp(140px, 25vw, 220px);
   width: 100%;

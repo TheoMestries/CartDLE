@@ -6,6 +6,7 @@ import {
   seasonLabels,
 } from './config/constants.js';
 import { GameModes, recordVictory } from './shared/dailySummary.js';
+import { markModeCompleted, syncNavCompletion } from './shared/navCompletion.js';
 import { setupSummaryModal } from './shared/summaryModal.js';
 
 const STORAGE_KEY = 'cartdle-classic-state';
@@ -37,6 +38,8 @@ const summaryController = setupSummaryModal({
     }
   },
 });
+
+syncNavCompletion();
 
 const rarityIndex = new Map(rarityOrder.map((value, index) => [value, index]));
 const idLookup = new Map();
@@ -532,6 +535,8 @@ function handleVictory({ openModal = true } = {}) {
   revealCard(targetCard, { showModal: openModal });
   setFeedback(victoryText);
   disableHint();
+
+  markModeCompleted(GameModes.Classic);
 
   const { summary, allComplete, alreadyDisplayed } = recordVictory(GameModes.Classic, {
     cardId: targetCard.id,
