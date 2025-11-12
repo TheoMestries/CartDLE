@@ -61,6 +61,11 @@ body {
   box-shadow: 0 18px 40px rgba(15, 23, 42, 0.3);
 }
 
+.panel--form {
+  position: relative;
+  z-index: 10;
+}
+
 .panel__title {
   margin: 0 0 1rem;
   font-size: 1.25rem;
