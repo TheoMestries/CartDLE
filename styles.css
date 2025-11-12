@@ -75,7 +75,7 @@ body {
 }
 
 .layout__logo {
-  max-width: min(320px, 70vw);
+  max-width: clamp(140px, 25vw, 220px);
   width: 100%;
   height: auto;
 }
