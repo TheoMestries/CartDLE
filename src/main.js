@@ -19,6 +19,7 @@ const feedback = document.getElementById('feedback');
 const resultsBody = document.querySelector('#results tbody');
 const victoryModal = document.getElementById('victory-modal');
 const victoryClose = document.getElementById('victory-close');
+const victorySubtitle = victoryModal.querySelector('.modal__subtitle');
 const modalOverlay = victoryModal.querySelector('[data-close]');
 const revealImage = document.getElementById('reveal-image');
 const revealName = document.getElementById('reveal-name');
@@ -93,8 +94,11 @@ guessForm.addEventListener('submit', (event) => {
   updateHintAvailability();
 
   if (guessCard.id === targetCard.id) {
+    const attempts = guessHistory.length;
+    const victoryText = getVictoryMessage(attempts);
+    setVictoryModalSubtitle(victoryText);
     revealCard(targetCard, { showModal: true });
-    setFeedback('Bravo ! Tu as trouvé la carte mystère.');
+    setFeedback(victoryText);
     disableHint();
   }
 
@@ -538,8 +542,11 @@ function initializeState() {
   updateHintAvailability();
 
   if (guessHistory.includes(targetCard.id)) {
+    const attempts = guessHistory.length;
+    const victoryText = getVictoryMessage(attempts);
+    setVictoryModalSubtitle(victoryText);
     revealCard(targetCard, { showModal: false });
-    setFeedback('Bravo ! Tu as trouvé la carte mystère.');
+    setFeedback(victoryText);
     disableHint();
   }
 }
@@ -604,4 +611,17 @@ function clearStoredState(key) {
   } catch (error) {
     console.warn('Impossible de réinitialiser la progression CartDLE.', error);
   }
+}
+
+function getVictoryMessage(attempts) {
+  const attemptLabel = attempts > 1 ? 'coups' : 'coup';
+  return `Bravo ! Tu as trouvé la carte mystère en ${attempts} ${attemptLabel}.`;
+}
+
+function setVictoryModalSubtitle(message) {
+  if (!victorySubtitle) {
+    return;
+  }
+
+  victorySubtitle.textContent = message;
 }
