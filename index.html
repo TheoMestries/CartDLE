@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CartDLE</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="layout">
+      <header class="layout__header">
+        <h1>CartDLE</h1>
+        <p class="intro">
+          Devinez la carte mystère en vous aidant des indices sur la saison, la collection, le type,
+          la rareté et le nombre de cartes dans la collection.
+        </p>
+        <p class="intro intro--secondary">Une nouvelle carte est proposée chaque jour.</p>
+      </header>
+
+      <section class="panel">
+        <form id="guess-form" autocomplete="off" class="guess-form">
+          <label class="guess-form__label" for="guess-input">Nom de la carte</label>
+          <div class="guess-form__controls">
+            <input
+              id="guess-input"
+              class="guess-form__input"
+              name="guess"
+              type="text"
+              list="card-options"
+              placeholder="Exemple : La Tavernière"
+              required
+            />
+            <datalist id="card-options"></datalist>
+            <button type="submit" class="guess-form__submit">Valider</button>
+          </div>
+        </form>
+        <p id="feedback" class="feedback" role="status" aria-live="polite"></p>
+      </section>
+
+      <section class="panel">
+        <h2 class="panel__title">Historique des tentatives</h2>
+        <div class="table-wrapper">
+          <table id="results" class="results-table">
+            <thead>
+              <tr>
+                <th scope="col">Carte</th>
+                <th scope="col">Saison</th>
+                <th scope="col">Collection</th>
+                <th scope="col">Type</th>
+                <th scope="col">Rareté</th>
+                <th scope="col">Taille de la collection</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="reveal" class="panel panel--reveal" hidden>
+        <h2 class="panel__title">Carte trouvée !</h2>
+        <div class="reveal">
+          <img id="reveal-image" class="reveal__image" alt="" />
+          <div class="reveal__content">
+            <h3 id="reveal-name" class="reveal__name"></h3>
+            <p id="reveal-meta" class="reveal__meta"></p>
+            <p id="reveal-description" class="reveal__description"></p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="src/main.js"></script>
+  </body>
+</html>
