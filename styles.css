@@ -136,6 +136,51 @@ body {
   color: var(--color-muted);
 }
 
+.hint {
+  margin-top: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.hint__button {
+  align-self: flex-start;
+  padding: 0.6rem 1.2rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  background: rgba(15, 23, 42, 0.6);
+  color: inherit;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.hint__button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: rgba(56, 189, 248, 0.6);
+  box-shadow: 0 10px 20px rgba(56, 189, 248, 0.2);
+}
+
+.hint__button:disabled {
+  cursor: default;
+  opacity: 0.65;
+}
+
+.hint__button[hidden] {
+  display: none;
+}
+
+.hint__content {
+  margin: 0;
+  line-height: 1.5;
+  color: var(--color-text);
+}
+
+.hint__content[hidden] {
+  display: none;
+}
+
 .guess-suggestions {
   position: absolute;
   top: calc(100% + 0.4rem);

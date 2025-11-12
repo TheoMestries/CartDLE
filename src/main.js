@@ -22,9 +22,13 @@ const revealName = document.getElementById('reveal-name');
 const revealMeta = document.getElementById('reveal-meta');
 const revealDescription = document.getElementById('reveal-description');
 const suggestionsContainer = document.getElementById('guess-suggestions');
+const hintButton = document.getElementById('hint-button');
+const hintContent = document.getElementById('hint-content');
 
 const rarityIndex = new Map(rarityOrder.map((value, index) => [value, index]));
 const idLookup = new Map();
+
+let hintRevealed = false;
 
 cards.forEach((card) => {
   const uniqueLabel = `${card.name} (${card.collectionName})`;
@@ -80,12 +84,18 @@ guessForm.addEventListener('submit', (event) => {
   setFeedback('');
   hideSuggestions();
   updateSuggestions();
+  updateHintAvailability();
 
   if (guessCard.id === targetCard.id) {
     revealCard(targetCard);
     setFeedback('Bravo ! Tu as trouvé la carte mystère.');
+    disableHint();
   }
 });
+
+if (hintButton) {
+  hintButton.addEventListener('click', revealHint);
+}
 
 function handleGuessInput() {
   delete guessInput.dataset.cardId;
@@ -401,6 +411,10 @@ function revealCard(card) {
   }`;
   revealDescription.textContent = card.description;
 
+  if (hintContent && hintRevealed) {
+    hintContent.textContent = card.description;
+  }
+
   if (card.imagePath) {
     revealImage.src = card.imagePath;
     revealImage.alt = card.name;
@@ -449,4 +463,37 @@ function closeVictoryModal() {
       handleClose();
     }
   }, 320);
+}
+
+function updateHintAvailability() {
+  if (!hintButton || hintRevealed) {
+    return;
+  }
+
+  const attempts = guessedIds.size;
+  if (attempts >= 8) {
+    hintButton.hidden = false;
+    hintButton.disabled = false;
+  }
+}
+
+function revealHint() {
+  if (!hintButton || !hintContent || hintRevealed) {
+    return;
+  }
+
+  hintRevealed = true;
+  hintContent.textContent = targetCard.description;
+  hintContent.hidden = false;
+  hintButton.textContent = 'Indice révélé';
+  hintButton.disabled = true;
+}
+
+function disableHint() {
+  if (!hintButton) {
+    return;
+  }
+
+  hintButton.disabled = true;
+  hintButton.hidden = true;
 }
