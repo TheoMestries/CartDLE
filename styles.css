@@ -227,23 +227,31 @@ body {
 
 .guess-suggestion__image,
 .guess-suggestion__placeholder {
-  width: 44px;
-  height: 44px;
-  border-radius: 10px;
   flex-shrink: 0;
-  object-fit: cover;
-  background: rgba(148, 163, 184, 0.15);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-muted);
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
+  border-radius: 12px;
 }
 
 .guess-suggestion__image {
   display: block;
+  width: 72px;
+  max-height: 96px;
+  height: auto;
+  object-fit: contain;
+  background: none;
+  box-shadow: none;
+}
+
+.guess-suggestion__placeholder {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(148, 163, 184, 0.15);
+  color: var(--color-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
 }
 
 .guess-suggestion__content {
