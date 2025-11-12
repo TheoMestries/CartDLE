@@ -80,11 +80,18 @@ body {
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
+  align-items: flex-start;
+}
+
+.guess-form__input-wrapper {
+  position: relative;
+  z-index: 2;
+  flex: 1 1 240px;
+  min-width: 200px;
 }
 
 .guess-form__input {
-  flex: 1 1 240px;
-  min-width: 200px;
+  width: 100%;
   padding: 0.75rem 1rem;
   border-radius: 999px;
   border: 1px solid transparent;
@@ -122,6 +129,82 @@ body {
   margin: 0;
   font-size: 0.95rem;
   color: var(--color-muted);
+}
+
+.guess-suggestions {
+  position: absolute;
+  top: calc(100% + 0.4rem);
+  left: 0;
+  width: 100%;
+  max-height: 280px;
+  overflow-y: auto;
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.35);
+  padding: 0.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  z-index: 20;
+}
+
+.guess-suggestions[hidden] {
+  display: none;
+}
+
+.guess-suggestion {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: inherit;
+  padding: 0.55rem 0.6rem;
+  border-radius: 12px;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.guess-suggestion:focus-visible,
+.guess-suggestion:hover {
+  background: rgba(56, 189, 248, 0.15);
+  outline: none;
+}
+
+.guess-suggestion__image,
+.guess-suggestion__placeholder {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  flex-shrink: 0;
+  object-fit: cover;
+  background: rgba(148, 163, 184, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.guess-suggestion__image {
+  display: block;
+}
+
+.guess-suggestion__content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.guess-suggestion__name {
+  font-weight: 600;
+  letter-spacing: 0.01em;
 }
 
 .table-wrapper {
