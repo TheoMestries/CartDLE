@@ -6,25 +6,36 @@ const allCollections = [...season1Cards, ...season2Cards];
 
 const cards = allCollections.flatMap((collection) => {
   const collectionSize = collection.cards.length;
-  return collection.cards.map((cardEntry) => {
-    const [name, description, image, type, rarity] = cardEntry;
-    return {
-      id: `${collection.collection_id}-${name}`,
-      name,
-      description,
-      image,
-      type,
-      rarity,
-      typeLabel: typeLabels[type] ?? typeLabels.character,
-      rarityLabel: rarityLabels[rarity] ?? rarity,
-      season: collection.season_id,
-      collectionId: collection.collection_id,
-      collectionName: collection.collection_name,
-      collectionSize,
-      collectionImage: collection.collection_image,
-      imagePath: computeImagePath(collection.season_id, collection.collection_name, image),
-    };
-  });
+  return collection.cards
+    .map((cardEntry) => {
+      const [name, description, image, type, rarity] = cardEntry;
+      const trimmedDescription = description?.trim();
+      if (!trimmedDescription) {
+        return null;
+      }
+
+      return {
+        id: `${collection.collection_id}-${name}`,
+        name,
+        description: trimmedDescription,
+        image,
+        type,
+        rarity,
+        typeLabel: typeLabels[type] ?? typeLabels.character,
+        rarityLabel: rarityLabels[rarity] ?? rarity,
+        season: collection.season_id,
+        collectionId: collection.collection_id,
+        collectionName: collection.collection_name,
+        collectionSize,
+        collectionImage: collection.collection_image,
+        imagePath: computeImagePath(
+          collection.season_id,
+          collection.collection_name,
+          image,
+        ),
+      };
+    })
+    .filter(Boolean);
 });
 
 export default cards;

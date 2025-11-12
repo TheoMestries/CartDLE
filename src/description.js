@@ -5,6 +5,8 @@ import {
   typeLabels,
 } from './config/constants.js';
 
+const FALLBACK_DESCRIPTION = 'Description indisponible pour cette carte.';
+
 const descriptionElement = document.getElementById('mystery-description');
 const guessForm = document.getElementById('guess-form');
 const guessInput = document.getElementById('guess-input');
@@ -35,7 +37,7 @@ cards.forEach((card) => {
 });
 
 const targetCard = pickDailyCard(cards, 'description');
-descriptionElement.textContent = targetCard.description;
+descriptionElement.textContent = getCardDescription(targetCard);
 
 if (revealImage) {
   revealImage.addEventListener('error', () => {
@@ -257,7 +259,7 @@ function revealCard(card) {
   revealMeta.textContent = `${seasonLabels[card.season] ?? `Saison ${card.season}`} · ${
     card.collectionName
   } · ${rarityLabels[card.rarity] ?? card.rarity} · ${typeLabels[card.type] ?? card.type}`;
-  revealDescription.textContent = card.description;
+  revealDescription.textContent = getCardDescription(card);
 
   if (card.imagePath) {
     revealImage.hidden = false;
@@ -276,6 +278,15 @@ function setFeedback(message, detail = '') {
 
 function normalize(value) {
   return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase();
+}
+
+function getCardDescription(card) {
+  const description = card.description?.trim();
+  if (description) {
+    return description;
+  }
+
+  return FALLBACK_DESCRIPTION;
 }
 
 function pickDailyCard(list, salt = '') {
