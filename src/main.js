@@ -235,6 +235,8 @@ function addGuessRow(guessCard, target) {
   const evaluation = evaluateGuess(guessCard, target);
   const row = document.createElement('tr');
 
+  row.appendChild(createVisualCell(guessCard));
+
   const nameCell = document.createElement('th');
   nameCell.scope = 'row';
   nameCell.textContent = guessCard.name;
@@ -247,6 +249,27 @@ function addGuessRow(guessCard, target) {
   row.appendChild(createResultCell(evaluation.collectionSize, 'collectionSize'));
 
   resultsBody.prepend(row);
+}
+
+function createVisualCell(card) {
+  const cell = document.createElement('td');
+  cell.className = 'results-table__visual';
+
+  if (card.imagePath) {
+    const image = document.createElement('img');
+    image.src = card.imagePath;
+    image.alt = '';
+    image.loading = 'lazy';
+    image.className = 'results-table__thumbnail';
+    cell.appendChild(image);
+  } else {
+    const placeholder = document.createElement('span');
+    placeholder.className = 'results-table__thumbnail results-table__thumbnail--placeholder';
+    placeholder.textContent = card.name.slice(0, 1).toUpperCase();
+    cell.appendChild(placeholder);
+  }
+
+  return cell;
 }
 
 function createResultCell(result, category) {
