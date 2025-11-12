@@ -143,13 +143,14 @@ function createResultCell(result, category) {
 }
 
 function evaluateGuess(guess, target) {
-  const seasonStatus = compareNumbers(guess.season, target.season);
+  const seasonStatus = guess.season === target.season ? 'correct' : 'incorrect';
   const guessCollectionLabel = guess.collectionName;
   const targetType = typeLabels[target.type] ?? target.type;
   const guessType = typeLabels[guess.type] ?? guess.type;
   const guessRarityIndex = rarityIndex.get(guess.rarity);
   const targetRarityIndex = rarityIndex.get(target.rarity);
-  const rarityStatus = compareNumbers(guessRarityIndex, targetRarityIndex);
+  const rarityStatus =
+    guessRarityIndex === targetRarityIndex ? 'correct' : 'incorrect';
   const sizeStatus = compareNumbers(guess.collectionSize, target.collectionSize);
 
   return {
@@ -159,12 +160,7 @@ function evaluateGuess(guess, target) {
     },
     collection: {
       value: guessCollectionLabel,
-      status:
-        guess.collectionId === target.collectionId
-          ? 'correct'
-          : guess.season === target.season
-          ? 'partial'
-          : 'incorrect',
+      status: guess.collectionId === target.collectionId ? 'correct' : 'incorrect',
     },
     type: {
       value: guessType,
@@ -208,20 +204,15 @@ function getResultHint(category, status) {
 
   const hints = {
     season: {
-      higher: 'La carte mystère est dans une saison plus récente.',
-      lower: 'La carte mystère est dans une saison plus ancienne.',
-      incorrect: 'La carte mystère est dans une autre saison.',
+      incorrect: 'Ce n\'est pas la bonne saison.',
     },
     collection: {
-      partial: 'Même saison, mais pas la bonne collection.',
       incorrect: 'Ce n\'est pas la bonne collection.',
     },
     type: {
       incorrect: 'Le type ne correspond pas (personnage ou lieu).',
     },
     rarity: {
-      higher: 'La carte mystère est de rareté supérieure.',
-      lower: 'La carte mystère est de rareté inférieure.',
       incorrect: 'La rareté ne correspond pas.',
     },
     collectionSize: {
