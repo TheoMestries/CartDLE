@@ -292,6 +292,10 @@ body {
   width: 120px;
 }
 
+.results-table__visual-heading {
+  text-align: center;
+}
+
 .results-table__thumbnail {
   width: 100%;
   max-width: 108px;
@@ -330,6 +334,10 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--color-muted);
+}
+
+.results-table thead th:nth-child(n + 3) {
+  padding-left: calc(1rem + 0.95rem);
 }
 
 .results-table tbody tr:last-child td {
