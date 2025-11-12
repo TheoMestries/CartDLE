@@ -1,4 +1,4 @@
-import { CardTypes, CardRarity } from '../../../config/constants.js';
+import { CardTypes, CardRarity } from '../config/constants.js';
 
 const season1Cards = [
     {
