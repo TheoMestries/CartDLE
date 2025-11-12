@@ -5,6 +5,7 @@ import {
   typeLabels,
 } from './config/constants.js';
 import { GameModes, recordVictory } from './shared/dailySummary.js';
+import { markModeCompleted, syncNavCompletion } from './shared/navCompletion.js';
 import { setupSummaryModal } from './shared/summaryModal.js';
 
 const STORAGE_KEY = 'cartdle-zoom-state';
@@ -43,6 +44,8 @@ const summaryController = setupSummaryModal({
     }
   },
 });
+
+syncNavCompletion();
 
 const cardLookup = new Map();
 const nameLookup = new Map();
@@ -346,6 +349,8 @@ function handleVictory(card, { openModal = true } = {}) {
   }
   zoomLevel = clampZoom(1);
   updateZoom();
+
+  markModeCompleted(GameModes.Zoom);
 
   const { summary, allComplete, alreadyDisplayed } = recordVictory(GameModes.Zoom, {
     cardId: card.id,

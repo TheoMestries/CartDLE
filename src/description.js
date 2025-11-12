@@ -5,6 +5,7 @@ import {
   typeLabels,
 } from './config/constants.js';
 import { GameModes, recordVictory } from './shared/dailySummary.js';
+import { markModeCompleted, syncNavCompletion } from './shared/navCompletion.js';
 import { setupSummaryModal } from './shared/summaryModal.js';
 
 const STORAGE_KEY = 'cartdle-description-state';
@@ -37,6 +38,8 @@ const summaryController = setupSummaryModal({
     }
   },
 });
+
+syncNavCompletion();
 
 const cardLookup = new Map();
 const nameLookup = new Map();
@@ -342,6 +345,8 @@ function handleVictory(card, { openModal = true } = {}) {
   if (submitButton) {
     submitButton.disabled = true;
   }
+
+  markModeCompleted(GameModes.Description);
 
   const { summary, allComplete, alreadyDisplayed } = recordVictory(GameModes.Description, {
     cardId: card.id,
