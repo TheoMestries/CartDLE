@@ -161,13 +161,6 @@ function createSuggestionItem(card) {
   name.textContent = card.name;
   content.appendChild(name);
 
-  const meta = document.createElement('span');
-  meta.className = 'guess-suggestion__meta';
-  meta.textContent = card.typeLabel ?? '';
-  if (meta.textContent) {
-    content.appendChild(meta);
-  }
-
   button.appendChild(visual);
   button.appendChild(content);
 
