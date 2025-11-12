@@ -14,7 +14,9 @@ const guessForm = document.getElementById('guess-form');
 const guessInput = document.getElementById('guess-input');
 const feedback = document.getElementById('feedback');
 const resultsBody = document.querySelector('#results tbody');
-const revealSection = document.getElementById('reveal');
+const victoryModal = document.getElementById('victory-modal');
+const victoryClose = document.getElementById('victory-close');
+const modalOverlay = victoryModal.querySelector('[data-close]');
 const revealImage = document.getElementById('reveal-image');
 const revealName = document.getElementById('reveal-name');
 const revealMeta = document.getElementById('reveal-meta');
@@ -71,6 +73,16 @@ guessForm.addEventListener('submit', (event) => {
   if (guessCard.id === targetCard.id) {
     revealCard(targetCard);
     setFeedback('Bravo ! Tu as trouvé la carte mystère.');
+  }
+});
+
+victoryClose.addEventListener('click', closeVictoryModal);
+if (modalOverlay) {
+  modalOverlay.addEventListener('click', closeVictoryModal);
+}
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && !victoryModal.hidden) {
+    closeVictoryModal();
   }
 });
 
@@ -244,7 +256,6 @@ function pickDailyCard(list) {
 }
 
 function revealCard(card) {
-  revealSection.hidden = false;
   revealName.textContent = card.name;
   revealMeta.textContent = `${seasonLabels[card.season] ?? `Saison ${card.season}`} · ${card.collectionName} · ${
     rarityLabels[card.rarity] ?? card.rarity
@@ -258,6 +269,8 @@ function revealCard(card) {
   } else {
     revealImage.hidden = true;
   }
+
+  openVictoryModal();
 }
 
 function setFeedback(message, detail = '') {
@@ -266,4 +279,35 @@ function setFeedback(message, detail = '') {
 
 function normalize(value) {
   return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase();
+}
+
+function openVictoryModal() {
+  victoryModal.hidden = false;
+  requestAnimationFrame(() => {
+    victoryModal.classList.add('modal--open');
+    victoryClose.focus();
+  });
+}
+
+function closeVictoryModal() {
+  if (victoryModal.hidden) {
+    return;
+  }
+
+  victoryModal.classList.remove('modal--open');
+
+  const handleClose = () => {
+    victoryModal.hidden = true;
+    victoryModal.removeEventListener('transitionend', handleClose);
+    guessInput.focus();
+  };
+
+  victoryModal.addEventListener('transitionend', handleClose);
+
+  // Fallback in case the transition does not fire
+  setTimeout(() => {
+    if (!victoryModal.hidden) {
+      handleClose();
+    }
+  }, 320);
 }
