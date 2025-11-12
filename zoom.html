@@ -97,6 +97,25 @@
           </div>
         </div>
       </div>
+
+      <div
+        id="summary-modal"
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="summary-title"
+        hidden
+      >
+        <div class="modal__overlay" data-summary-close></div>
+        <div class="modal__panel" role="document">
+          <button class="modal__close" type="button" aria-label="Fermer" data-summary-close>
+            ×
+          </button>
+          <h2 id="summary-title" class="modal__title">Bilan du jour</h2>
+          <p id="summary-subtitle" class="modal__subtitle"></p>
+          <ul id="summary-list" class="summary-list"></ul>
+        </div>
+      </div>
     </main>
 
     <script type="module" src="src/zoom.js"></script>

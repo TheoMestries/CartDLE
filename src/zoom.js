@@ -4,6 +4,8 @@ import {
   seasonLabels,
   typeLabels,
 } from './config/constants.js';
+import { GameModes, recordVictory } from './shared/dailySummary.js';
+import { setupSummaryModal } from './shared/summaryModal.js';
 
 const STORAGE_KEY = 'cartdle-zoom-state';
 
@@ -34,12 +36,20 @@ const modalRevealImage = document.getElementById('modal-reveal-image');
 const modalRevealName = document.getElementById('modal-reveal-name');
 const modalRevealMeta = document.getElementById('modal-reveal-meta');
 const modalRevealDescription = document.getElementById('modal-reveal-description');
+const summaryController = setupSummaryModal({
+  onClose: () => {
+    if (guessInput && !guessInput.disabled && document.activeElement === document.body) {
+      guessInput.focus();
+    }
+  },
+});
 
 const cardLookup = new Map();
 const nameLookup = new Map();
 const idLookup = new Map();
 const guessedIds = new Set();
 const guessHistory = [];
+let pendingSummary = null;
 
 cards.forEach((card) => {
   const uniqueLabel = `${card.name} (${card.collectionName})`;
@@ -180,8 +190,14 @@ document.addEventListener('click', (event) => {
 
 document.addEventListener('keydown', (event) => {
   if (event.key === 'Escape') {
+    if (summaryController.isOpen()) {
+      summaryController.close();
+      return;
+    }
+
     if (victoryModal && !victoryModal.hidden) {
       closeVictoryModal();
+      return;
     }
     hideSuggestions();
   }
@@ -330,6 +346,22 @@ function handleVictory(card, { openModal = true } = {}) {
   }
   zoomLevel = clampZoom(1);
   updateZoom();
+
+  const { summary, allComplete, alreadyDisplayed } = recordVictory(GameModes.Zoom, {
+    cardId: card.id,
+    cardName: card.name,
+    attempts,
+    meta: getCardMeta(card),
+    description: getCardDescription(card),
+  });
+
+  if (allComplete && !alreadyDisplayed && summary) {
+    if (openModal) {
+      pendingSummary = summary;
+    } else {
+      summaryController.show(summary);
+    }
+  }
 }
 
 function revealCard(card) {
@@ -465,6 +497,10 @@ function closeVictoryModal() {
     victoryModal.removeEventListener('transitionend', handleClose);
     if (guessInput && !guessInput.disabled) {
       guessInput.focus();
+    }
+    if (pendingSummary) {
+      summaryController.show(pendingSummary);
+      pendingSummary = null;
     }
   };
 

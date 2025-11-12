@@ -5,6 +5,8 @@ import {
   typeLabels,
   seasonLabels,
 } from './config/constants.js';
+import { GameModes, recordVictory } from './shared/dailySummary.js';
+import { setupSummaryModal } from './shared/summaryModal.js';
 
 const STORAGE_KEY = 'cartdle-classic-state';
 
@@ -28,11 +30,19 @@ const revealDescription = document.getElementById('reveal-description');
 const suggestionsContainer = document.getElementById('guess-suggestions');
 const hintButton = document.getElementById('hint-button');
 const hintContent = document.getElementById('hint-content');
+const summaryController = setupSummaryModal({
+  onClose: () => {
+    if (document.activeElement === document.body && !guessInput.disabled) {
+      guessInput.focus();
+    }
+  },
+});
 
 const rarityIndex = new Map(rarityOrder.map((value, index) => [value, index]));
 const idLookup = new Map();
 
 let hintRevealed = false;
+let pendingSummary = null;
 
 cards.forEach((card) => {
   const uniqueLabel = `${card.name} (${card.collectionName})`;
@@ -94,12 +104,7 @@ guessForm.addEventListener('submit', (event) => {
   updateHintAvailability();
 
   if (guessCard.id === targetCard.id) {
-    const attempts = guessHistory.length;
-    const victoryText = getVictoryMessage(attempts);
-    setVictoryModalSubtitle(victoryText);
-    revealCard(targetCard, { showModal: true });
-    setFeedback(victoryText);
-    disableHint();
+    handleVictory({ openModal: true });
   }
 
   persistState();
@@ -216,8 +221,14 @@ if (modalOverlay) {
 }
 document.addEventListener('keydown', (event) => {
   if (event.key === 'Escape') {
+    if (summaryController.isOpen()) {
+      summaryController.close();
+      return;
+    }
+
     if (!victoryModal.hidden) {
       closeVictoryModal();
+      return;
     }
     hideSuggestions();
   }
@@ -467,6 +478,10 @@ function closeVictoryModal() {
     victoryModal.hidden = true;
     victoryModal.removeEventListener('transitionend', handleClose);
     guessInput.focus();
+    if (pendingSummary) {
+      summaryController.show(pendingSummary);
+      pendingSummary = null;
+    }
   };
 
   victoryModal.addEventListener('transitionend', handleClose);
@@ -510,6 +525,31 @@ function disableHint() {
   hintButton.hidden = true;
 }
 
+function handleVictory({ openModal = true } = {}) {
+  const attempts = guessHistory.length;
+  const victoryText = getVictoryMessage(attempts);
+  setVictoryModalSubtitle(victoryText);
+  revealCard(targetCard, { showModal: openModal });
+  setFeedback(victoryText);
+  disableHint();
+
+  const { summary, allComplete, alreadyDisplayed } = recordVictory(GameModes.Classic, {
+    cardId: targetCard.id,
+    cardName: targetCard.name,
+    attempts,
+    meta: getCardMeta(targetCard),
+    description: targetCard.description,
+  });
+
+  if (allComplete && !alreadyDisplayed && summary) {
+    if (openModal) {
+      pendingSummary = summary;
+    } else {
+      summaryController.show(summary);
+    }
+  }
+}
+
 function initializeState() {
   const state = loadStoredState(STORAGE_KEY);
   if (!state) {
@@ -542,12 +582,7 @@ function initializeState() {
   updateHintAvailability();
 
   if (guessHistory.includes(targetCard.id)) {
-    const attempts = guessHistory.length;
-    const victoryText = getVictoryMessage(attempts);
-    setVictoryModalSubtitle(victoryText);
-    revealCard(targetCard, { showModal: false });
-    setFeedback(victoryText);
-    disableHint();
+    handleVictory({ openModal: false });
   }
 }
 
@@ -624,4 +659,10 @@ function setVictoryModalSubtitle(message) {
   }
 
   victorySubtitle.textContent = message;
+}
+
+function getCardMeta(card) {
+  return `${seasonLabels[card.season] ?? `Saison ${card.season}`} · ${card.collectionName} · ${
+    rarityLabels[card.rarity] ?? card.rarity
+  } · ${typeLabels[card.type] ?? card.type}`;
 }
