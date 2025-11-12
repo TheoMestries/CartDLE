@@ -235,6 +235,36 @@ body {
   border-bottom: 1px solid rgba(148, 163, 184, 0.1);
 }
 
+.results-table__visual-heading {
+  width: 88px;
+}
+
+.results-table__visual {
+  width: 88px;
+}
+
+.results-table__thumbnail {
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  object-fit: cover;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(148, 163, 184, 0.15);
+  color: var(--color-muted);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.25);
+}
+
+.results-table__thumbnail--placeholder {
+  font-family: var(--font-base);
+}
+
 .results-table th {
   font-size: 0.85rem;
   text-transform: uppercase;
