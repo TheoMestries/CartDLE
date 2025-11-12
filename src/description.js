@@ -22,6 +22,7 @@ const revealMeta = document.getElementById('reveal-meta');
 const revealDescription = document.getElementById('reveal-description');
 const victoryModal = document.getElementById('victory-modal');
 const victoryClose = document.getElementById('victory-close');
+const victorySubtitle = victoryModal?.querySelector('.modal__subtitle');
 const modalOverlay = victoryModal?.querySelector('[data-close]');
 const modalRevealImage = document.getElementById('modal-reveal-image');
 const modalRevealName = document.getElementById('modal-reveal-name');
@@ -310,7 +311,10 @@ function addHistoryItem(card, isCorrect) {
 }
 
 function handleVictory(card, { openModal = true } = {}) {
-  setFeedback('Bravo ! Tu as trouvé la carte mystère.');
+  const attempts = guessHistory.length;
+  const victoryText = getVictoryMessage(attempts);
+  setVictoryModalSubtitle(victoryText);
+  setFeedback(victoryText);
   revealCard(card);
   if (openModal) {
     openVictoryModal(card);
@@ -406,6 +410,19 @@ function clearStoredState(key) {
   } catch (error) {
     console.warn('Impossible de réinitialiser la progression de la description mystère.', error);
   }
+}
+
+function getVictoryMessage(attempts) {
+  const attemptLabel = attempts > 1 ? 'coups' : 'coup';
+  return `Bravo ! Tu as trouvé la carte mystère en ${attempts} ${attemptLabel}.`;
+}
+
+function setVictoryModalSubtitle(message) {
+  if (!victorySubtitle) {
+    return;
+  }
+
+  victorySubtitle.textContent = message;
 }
 
 function pickDailyCard(list, salt = '') {
