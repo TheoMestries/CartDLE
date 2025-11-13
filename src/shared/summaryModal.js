@@ -17,6 +17,7 @@ export function setupSummaryModal({
 
   const listElement = listId ? document.getElementById(listId) : null;
   const subtitleElement = subtitleId ? document.getElementById(subtitleId) : null;
+  const streakElement = document.getElementById('summary-streak');
   const closeElements = Array.from(modal.querySelectorAll('[data-summary-close]'));
   const closeButton = closeElements.find((element) => element.tagName === 'BUTTON') ?? closeElements[0] ?? null;
   let isClosing = false;
@@ -41,6 +42,7 @@ export function setupSummaryModal({
     isClosing = false;
     renderSummaryList(summaryState);
     updateSubtitle(summaryState);
+    updateStreak(summaryState);
 
     modal.hidden = false;
     requestAnimationFrame(() => {
@@ -143,12 +145,44 @@ export function setupSummaryModal({
     subtitleElement.textContent = `Tu as complété les 3 modes${dateLabel}.`;
   }
 
+  function updateStreak(summaryState) {
+    if (!streakElement) {
+      return;
+    }
+
+    const streak = summaryState?.streak;
+    const current = Number.isFinite(streak?.current) ? Math.max(0, streak.current) : 0;
+    const best = Number.isFinite(streak?.best) ? Math.max(0, streak.best) : 0;
+
+    if (current <= 0) {
+      streakElement.hidden = true;
+      streakElement.textContent = '';
+      return;
+    }
+
+    const currentLabel = formatDayCount(current);
+    const bestLabel = best > 0 ? formatDayCount(best) : '';
+    const parts = [`Série actuelle : ${currentLabel}`];
+    if (best > 0) {
+      parts.push(`Meilleure série : ${bestLabel}`);
+    }
+
+    streakElement.textContent = parts.join(' · ');
+    streakElement.hidden = false;
+  }
+
   function formatAttempts(attempts) {
     if (!Number.isFinite(attempts) || attempts <= 0) {
       return '—';
     }
     const label = attempts > 1 ? 'tentatives' : 'tentative';
     return `${attempts} ${label}`;
+  }
+
+  function formatDayCount(count) {
+    const safeCount = Math.max(0, Math.floor(count));
+    const label = safeCount > 1 ? 'jours' : 'jour';
+    return `${safeCount} ${label}`;
   }
 
   function formatDate(value) {
