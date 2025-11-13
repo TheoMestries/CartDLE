@@ -8,6 +8,7 @@ import {
 import { GameModes, recordVictory } from './shared/dailySummary.js';
 import { markModeCompleted, syncNavCompletion } from './shared/navCompletion.js';
 import { setupSummaryModal } from './shared/summaryModal.js';
+import { setupSummaryAccess } from './shared/summaryAccess.js';
 
 const STORAGE_KEY = 'cartdle-classic-state';
 
@@ -38,8 +39,14 @@ const summaryController = setupSummaryModal({
     }
   },
 });
+const summaryAccess = setupSummaryAccess({
+  onRequestShow: (summary) => {
+    summaryController.show(summary);
+  },
+});
 
 syncNavCompletion();
+summaryAccess.refresh();
 
 const rarityIndex = new Map(rarityOrder.map((value, index) => [value, index]));
 const idLookup = new Map();
@@ -545,6 +552,8 @@ function handleVictory({ openModal = true } = {}) {
     meta: getCardMeta(targetCard),
     description: targetCard.description,
   });
+
+  summaryAccess.refresh(summary ?? undefined);
 
   if (allComplete && !alreadyDisplayed && summary) {
     if (openModal) {
