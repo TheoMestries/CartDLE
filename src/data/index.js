@@ -15,7 +15,7 @@ const cards = allCollections.flatMap((collection) => {
       }
 
       return {
-        id: createCardId(collection.collection_id, index),
+        id: createCardId(collection.season_id, collection.collection_id, index),
         name,
         description: trimmedDescription,
         image,
@@ -41,9 +41,9 @@ const cards = allCollections.flatMap((collection) => {
 export default cards;
 export { allCollections };
 
-function createCardId(collectionId, index) {
+function createCardId(seasonId, collectionId, index) {
   const position = String(index + 1).padStart(3, '0');
-  return `${collectionId}-${position}`;
+  return `${seasonId}-${collectionId}-${position}`;
 }
 
 function computeImagePath(seasonId, collectionName, image) {
