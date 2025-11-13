@@ -9,69 +9,75 @@
   <body>
     <main class="layout">
       <header class="layout__header">
-        <img
-          src="e6177063-f672-4003-8c26-7aa8ea4a0d0d.png"
-          alt="CartDLE"
-          class="layout__logo"
-        />
-        <nav class="layout__nav" aria-label="Modes de jeu">
-          <a class="layout__nav-link layout__nav-link--active" href="index.html" data-mode="classic">Indices classiques</a>
-          <a class="layout__nav-link" href="description.html" data-mode="description">Description mystère</a>
-          <a class="layout__nav-link" href="zoom.html" data-mode="zoom">Zoom mystère</a>
-        </nav>
-        <p class="intro">
-          Devinez la carte mystère en vous aidant des indices sur la saison, la collection, le type,
-          la rareté et le nombre de cartes dans la collection.
-        </p>
-        <p class="intro intro--secondary">Une nouvelle carte est proposée chaque jour.</p>
+        <div class="layout__header-top">
+          <img
+            src="e6177063-f672-4003-8c26-7aa8ea4a0d0d.png"
+            alt="CartDLE"
+            class="layout__logo"
+          />
+          <nav class="layout__nav" aria-label="Modes de jeu">
+            <a class="layout__nav-link layout__nav-link--active" href="index.html" data-mode="classic">Indices classiques</a>
+            <a class="layout__nav-link" href="description.html" data-mode="description">Description mystère</a>
+            <a class="layout__nav-link" href="zoom.html" data-mode="zoom">Zoom mystère</a>
+          </nav>
+        </div>
+        <div class="layout__header-content">
+          <p class="intro">
+            Devinez la carte mystère en vous aidant des indices sur la saison, la collection, le type,
+            la rareté et le nombre de cartes dans la collection.
+          </p>
+          <p class="intro intro--secondary">Une nouvelle carte est proposée chaque jour.</p>
+        </div>
       </header>
 
-      <section class="panel panel--form">
-        <form id="guess-form" autocomplete="off" class="guess-form">
-          <label class="guess-form__label" for="guess-input">Nom de la carte</label>
-          <div class="guess-form__controls">
-            <div class="guess-form__input-wrapper">
-              <input
-                id="guess-input"
-                class="guess-form__input"
-                name="guess"
-                type="text"
-                placeholder="Exemple : La Tavernière"
-                required
-              />
-              <div id="guess-suggestions" class="guess-suggestions" hidden></div>
+      <div class="layout__content">
+        <section class="panel panel--form">
+          <form id="guess-form" autocomplete="off" class="guess-form">
+            <label class="guess-form__label" for="guess-input">Nom de la carte</label>
+            <div class="guess-form__controls">
+              <div class="guess-form__input-wrapper">
+                <input
+                  id="guess-input"
+                  class="guess-form__input"
+                  name="guess"
+                  type="text"
+                  placeholder="Exemple : La Tavernière"
+                  required
+                />
+                <div id="guess-suggestions" class="guess-suggestions" hidden></div>
+              </div>
+              <button type="submit" class="guess-form__submit">Valider</button>
             </div>
-            <button type="submit" class="guess-form__submit">Valider</button>
+          </form>
+          <p id="feedback" class="feedback" role="status" aria-live="polite"></p>
+          <div class="hint">
+            <button id="hint-button" class="hint__button" type="button" hidden>
+              Besoin d'un indice ?
+            </button>
+            <p id="hint-content" class="hint__content" hidden></p>
           </div>
-        </form>
-        <p id="feedback" class="feedback" role="status" aria-live="polite"></p>
-        <div class="hint">
-          <button id="hint-button" class="hint__button" type="button" hidden>
-            Besoin d'un indice ?
-          </button>
-          <p id="hint-content" class="hint__content" hidden></p>
-        </div>
-      </section>
+        </section>
 
-      <section class="panel">
-        <h2 class="panel__title">Historique des tentatives</h2>
-        <div class="table-wrapper">
-          <table id="results" class="results-table">
-            <thead>
-              <tr>
-                <th scope="col" class="results-table__visual-heading">Visuel</th>
-                <th scope="col">Carte</th>
-                <th scope="col">Saison</th>
-                <th scope="col">Collection</th>
-                <th scope="col">Type</th>
-                <th scope="col">Rareté</th>
-                <th scope="col">Taille de la collection</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </section>
+        <section class="panel">
+          <h2 class="panel__title">Historique des tentatives</h2>
+          <div class="table-wrapper">
+            <table id="results" class="results-table">
+              <thead>
+                <tr>
+                  <th scope="col" class="results-table__visual-heading">Visuel</th>
+                  <th scope="col">Carte</th>
+                  <th scope="col">Saison</th>
+                  <th scope="col">Collection</th>
+                  <th scope="col">Type</th>
+                  <th scope="col">Rareté</th>
+                  <th scope="col">Taille de la collection</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
 
       <div
         id="victory-modal"
