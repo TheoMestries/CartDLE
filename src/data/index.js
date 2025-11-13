@@ -7,7 +7,7 @@ const allCollections = [...season1Cards, ...season2Cards];
 const cards = allCollections.flatMap((collection) => {
   const collectionSize = collection.cards.length;
   return collection.cards
-    .map((cardEntry) => {
+    .map((cardEntry, index) => {
       const [name, description, image, type, rarity] = cardEntry;
       const trimmedDescription = description?.trim();
       if (!trimmedDescription) {
@@ -15,7 +15,7 @@ const cards = allCollections.flatMap((collection) => {
       }
 
       return {
-        id: `${collection.collection_id}-${name}`,
+        id: createCardId(collection.collection_id, index),
         name,
         description: trimmedDescription,
         image,
@@ -40,6 +40,11 @@ const cards = allCollections.flatMap((collection) => {
 
 export default cards;
 export { allCollections };
+
+function createCardId(collectionId, index) {
+  const position = String(index + 1).padStart(3, '0');
+  return `${collectionId}-${position}`;
+}
 
 function computeImagePath(seasonId, collectionName, image) {
   if (!image) {
