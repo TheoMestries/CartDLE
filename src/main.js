@@ -31,6 +31,7 @@ const revealDescription = document.getElementById('reveal-description');
 const suggestionsContainer = document.getElementById('guess-suggestions');
 const hintButton = document.getElementById('hint-button');
 const hintContent = document.getElementById('hint-content');
+const reviewButton = document.getElementById('review-button');
 const summaryController = setupSummaryModal({
   onClose: () => {
     if (document.activeElement === document.body && !guessInput.disabled) {
@@ -115,6 +116,12 @@ guessForm.addEventListener('submit', (event) => {
 
 if (hintButton) {
   hintButton.addEventListener('click', revealHint);
+}
+
+if (reviewButton) {
+  reviewButton.addEventListener('click', () => {
+    revealCard(targetCard, { showModal: true });
+  });
 }
 
 function handleGuessInput() {
@@ -535,6 +542,7 @@ function handleVictory({ openModal = true } = {}) {
   revealCard(targetCard, { showModal: openModal });
   setFeedback(victoryText);
   disableHint();
+  showReviewButton();
 
   markModeCompleted(GameModes.Classic);
 
@@ -664,6 +672,14 @@ function setVictoryModalSubtitle(message) {
   }
 
   victorySubtitle.textContent = message;
+}
+
+function showReviewButton() {
+  if (!reviewButton) {
+    return;
+  }
+
+  reviewButton.hidden = false;
 }
 
 function getCardMeta(card) {

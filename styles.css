@@ -435,6 +435,39 @@ body::after {
   display: none;
 }
 
+.victory-actions {
+  margin-top: 0.75rem;
+}
+
+.victory-actions__button {
+  padding: 0.65rem 1.5rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: rgba(9, 16, 38, 0.78);
+  color: inherit;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.victory-actions__button:hover {
+  transform: translateY(-2px);
+  border-color: rgba(96, 165, 250, 0.55);
+  box-shadow: 0 18px 35px rgba(96, 165, 250, 0.25);
+}
+
+.victory-actions__button:focus,
+.victory-actions__button:focus-visible {
+  outline: none;
+  border-color: rgba(96, 165, 250, 0.55);
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.25);
+}
+
+.victory-actions__button[hidden] {
+  display: none;
+}
+
 .guess-history {
   list-style: none;
   margin: 0;
