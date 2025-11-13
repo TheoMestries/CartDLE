@@ -9,65 +9,71 @@
   <body>
     <main class="layout">
       <header class="layout__header">
-        <img
-          src="e6177063-f672-4003-8c26-7aa8ea4a0d0d.png"
-          alt="CartDLE"
-          class="layout__logo"
-        />
-        <nav class="layout__nav" aria-label="Modes de jeu">
-          <a class="layout__nav-link" href="index.html" data-mode="classic">Indices classiques</a>
-          <a class="layout__nav-link layout__nav-link--active" href="description.html" data-mode="description">Description mystère</a>
-          <a class="layout__nav-link" href="zoom.html" data-mode="zoom">Zoom mystère</a>
-        </nav>
-        <p class="intro">
-          Devinez la carte mystère uniquement à partir de sa description. À chaque tentative, vous saurez
-          simplement si vous avez trouvé la bonne carte.
-        </p>
-        <p class="intro intro--secondary">Une nouvelle description est proposée chaque jour.</p>
+        <div class="layout__header-top">
+          <img
+            src="e6177063-f672-4003-8c26-7aa8ea4a0d0d.png"
+            alt="CartDLE"
+            class="layout__logo"
+          />
+          <nav class="layout__nav" aria-label="Modes de jeu">
+            <a class="layout__nav-link" href="index.html" data-mode="classic">Indices classiques</a>
+            <a class="layout__nav-link layout__nav-link--active" href="description.html" data-mode="description">Description mystère</a>
+            <a class="layout__nav-link" href="zoom.html" data-mode="zoom">Zoom mystère</a>
+          </nav>
+        </div>
+        <div class="layout__header-content">
+          <p class="intro">
+            Devinez la carte mystère uniquement à partir de sa description. À chaque tentative, vous saurez
+            simplement si vous avez trouvé la bonne carte.
+          </p>
+          <p class="intro intro--secondary">Une nouvelle description est proposée chaque jour.</p>
+        </div>
       </header>
 
-      <section class="panel">
-        <h2 class="panel__title">Description du jour</h2>
-        <p id="mystery-description" class="mystery-description"></p>
-      </section>
+      <div class="layout__content">
+        <section class="panel">
+          <h2 class="panel__title">Description du jour</h2>
+          <p id="mystery-description" class="mystery-description"></p>
+        </section>
 
-      <section class="panel panel--form">
-        <form id="guess-form" autocomplete="off" class="guess-form">
-          <label class="guess-form__label" for="guess-input">Nom de la carte</label>
-          <div class="guess-form__controls">
-            <div class="guess-form__input-wrapper">
-              <input
-                id="guess-input"
-                class="guess-form__input"
-                name="guess"
-                type="text"
-                placeholder="Exemple : La Tavernière"
-                required
-              />
-              <div id="guess-suggestions" class="guess-suggestions" hidden></div>
+        <section class="panel panel--form">
+          <form id="guess-form" autocomplete="off" class="guess-form">
+            <label class="guess-form__label" for="guess-input">Nom de la carte</label>
+            <div class="guess-form__controls">
+              <div class="guess-form__input-wrapper">
+                <input
+                  id="guess-input"
+                  class="guess-form__input"
+                  name="guess"
+                  type="text"
+                  placeholder="Exemple : La Tavernière"
+                  required
+                />
+                <div id="guess-suggestions" class="guess-suggestions" hidden></div>
+              </div>
+              <button type="submit" class="guess-form__submit">Valider</button>
             </div>
-            <button type="submit" class="guess-form__submit">Valider</button>
-          </div>
-        </form>
-        <p id="feedback" class="feedback" role="status" aria-live="polite"></p>
-      </section>
+          </form>
+          <p id="feedback" class="feedback" role="status" aria-live="polite"></p>
+        </section>
 
-      <section class="panel" aria-live="polite">
-        <h2 class="panel__title">Tentatives</h2>
-        <ul id="guess-history" class="guess-history"></ul>
-      </section>
+        <section class="panel" aria-live="polite">
+          <h2 class="panel__title">Tentatives</h2>
+          <ul id="guess-history" class="guess-history"></ul>
+        </section>
 
-      <section id="reveal" class="panel reveal-panel" hidden>
-        <h2 class="panel__title">Carte révélée</h2>
-        <div class="reveal">
-          <img id="reveal-image" class="reveal__image" alt="" />
-          <div class="reveal__content">
-            <h3 id="reveal-name" class="reveal__name"></h3>
-            <p id="reveal-meta" class="reveal__meta"></p>
-            <p id="reveal-description" class="reveal__description"></p>
+        <section id="reveal" class="panel reveal-panel" hidden>
+          <h2 class="panel__title">Carte révélée</h2>
+          <div class="reveal">
+            <img id="reveal-image" class="reveal__image" alt="" />
+            <div class="reveal__content">
+              <h3 id="reveal-name" class="reveal__name"></h3>
+              <p id="reveal-meta" class="reveal__meta"></p>
+              <p id="reveal-description" class="reveal__description"></p>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </div>
 
       <div
         id="victory-modal"
