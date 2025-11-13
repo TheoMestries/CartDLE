@@ -909,6 +909,12 @@ body::after {
   color: rgba(148, 163, 184, 0.85);
 }
 
+.modal__streak {
+  margin: 0.75rem 0 1.25rem;
+  font-weight: 600;
+  color: rgba(129, 140, 248, 0.95);
+}
+
 .modal__close {
   position: absolute;
   top: 1rem;
