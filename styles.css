@@ -978,19 +978,19 @@ body::-webkit-scrollbar-track {
 
 @media (min-width: 960px) {
   .layout__content {
-    grid-template-columns: repeat(12, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1fr);
     align-items: start;
   }
 
   .layout__content > .panel--form {
-    grid-column: span 5;
+    grid-column: 1 / -1;
     position: sticky;
     top: clamp(1.5rem, 3vw, 2.5rem);
     align-self: start;
   }
 
   .layout__content > .panel:not(.panel--form) {
-    grid-column: span 7;
+    grid-column: 1 / -1;
   }
 
   .layout__content > .panel.reveal-panel {
