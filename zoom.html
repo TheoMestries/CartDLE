@@ -91,14 +91,16 @@
           <button id="victory-close" class="modal__close" type="button" aria-label="Fermer">
             ×
           </button>
-          <h2 id="victory-title" class="modal__title">Félicitations !</h2>
-          <p class="modal__subtitle">Tu as trouvé la carte mystère.</p>
-          <div class="reveal">
-            <img id="modal-reveal-image" class="reveal__image" alt="" />
-            <div class="reveal__content">
-              <h3 id="modal-reveal-name" class="reveal__name"></h3>
-              <p id="modal-reveal-meta" class="reveal__meta"></p>
-              <p id="modal-reveal-description" class="reveal__description"></p>
+          <div class="modal__content">
+            <h2 id="victory-title" class="modal__title">Félicitations !</h2>
+            <p class="modal__subtitle">Tu as trouvé la carte mystère.</p>
+            <div class="reveal">
+              <img id="modal-reveal-image" class="reveal__image" alt="" />
+              <div class="reveal__content">
+                <h3 id="modal-reveal-name" class="reveal__name"></h3>
+                <p id="modal-reveal-meta" class="reveal__meta"></p>
+                <p id="modal-reveal-description" class="reveal__description"></p>
+              </div>
             </div>
           </div>
         </div>
@@ -117,9 +119,11 @@
           <button class="modal__close" type="button" aria-label="Fermer" data-summary-close>
             ×
           </button>
-          <h2 id="summary-title" class="modal__title">Bilan du jour</h2>
-          <p id="summary-subtitle" class="modal__subtitle"></p>
-          <ul id="summary-list" class="summary-list"></ul>
+          <div class="modal__content">
+            <h2 id="summary-title" class="modal__title">Bilan du jour</h2>
+            <p id="summary-subtitle" class="modal__subtitle"></p>
+            <ul id="summary-list" class="summary-list"></ul>
+          </div>
         </div>
       </div>
     </main>
