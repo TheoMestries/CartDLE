@@ -7,6 +7,7 @@ import {
 import { GameModes, recordVictory } from './shared/dailySummary.js';
 import { markModeCompleted, syncNavCompletion } from './shared/navCompletion.js';
 import { setupSummaryModal } from './shared/summaryModal.js';
+import { setupSummaryAccess } from './shared/summaryAccess.js';
 
 const STORAGE_KEY = 'cartdle-zoom-state';
 
@@ -44,8 +45,14 @@ const summaryController = setupSummaryModal({
     }
   },
 });
+const summaryAccess = setupSummaryAccess({
+  onRequestShow: (summary) => {
+    summaryController.show(summary);
+  },
+});
 
 syncNavCompletion();
+summaryAccess.refresh();
 
 const cardLookup = new Map();
 const nameLookup = new Map();
@@ -359,6 +366,8 @@ function handleVictory(card, { openModal = true } = {}) {
     meta: getCardMeta(card),
     description: getCardDescription(card),
   });
+
+  summaryAccess.refresh(summary ?? undefined);
 
   if (allComplete && !alreadyDisplayed && summary) {
     if (openModal) {
