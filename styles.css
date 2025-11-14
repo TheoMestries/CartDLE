@@ -25,6 +25,9 @@
 }
 
 body {
+  --page-padding-top: clamp(1.5rem, 4vh, 2.75rem);
+  --page-padding-bottom: clamp(2rem, 5vh, 3rem);
+  --page-padding-inline: clamp(1rem, 4vw, 2.5rem);
   margin: 0;
   font-family: var(--font-base);
   line-height: 1.6;
@@ -33,11 +36,12 @@ body {
     linear-gradient(160deg, var(--color-bg), var(--color-bg-accent));
   color: var(--color-text);
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   justify-content: center;
-  padding: clamp(2rem, 4vw, 3rem) clamp(1rem, 4vw, 2.5rem) 4rem;
+  padding: var(--page-padding-top) var(--page-padding-inline) var(--page-padding-bottom);
   position: relative;
-  overflow-x: hidden;
+  overflow: hidden;
   scrollbar-color: rgba(148, 163, 184, 0.45) rgba(5, 10, 31, 0.6);
   scrollbar-width: thin;
 }
@@ -77,6 +81,9 @@ body::after {
   display: flex;
   flex-direction: column;
   gap: clamp(1.75rem, 3vw, 2.5rem);
+  height: calc(100vh - (var(--page-padding-top) + var(--page-padding-bottom)));
+  height: calc(100dvh - (var(--page-padding-top) + var(--page-padding-bottom)));
+  min-height: 0;
 }
 
 .layout__header {
@@ -91,6 +98,7 @@ body::after {
   background: linear-gradient(155deg, rgba(17, 28, 56, 0.92), rgba(11, 20, 45, 0.82));
   box-shadow: var(--shadow-lg);
   overflow: hidden;
+  flex: 0 0 auto;
 }
 
 .layout__header::before {
@@ -277,6 +285,26 @@ body::after {
   display: grid;
   gap: clamp(1.5rem, 2.5vw, 2.25rem);
   grid-auto-flow: row dense;
+  grid-auto-rows: min-content;
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+  scrollbar-color: rgba(96, 165, 250, 0.45) transparent;
+  scrollbar-width: thin;
+}
+
+.layout__content::-webkit-scrollbar {
+  width: 10px;
+}
+
+.layout__content::-webkit-scrollbar-thumb {
+  background: rgba(96, 165, 250, 0.45);
+  border-radius: 999px;
+}
+
+.layout__content::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 .panel {
@@ -288,6 +316,7 @@ body::after {
   backdrop-filter: blur(18px);
   box-shadow: var(--shadow-sm);
   transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  min-height: 0;
 }
 
 .panel::after {
@@ -309,6 +338,27 @@ body::after {
   position: relative;
   z-index: 2;
   background: linear-gradient(160deg, rgba(15, 26, 56, 0.95), rgba(10, 18, 44, 0.9));
+}
+
+.panel--history {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.panel--history .panel__title {
+  flex: 0 0 auto;
+}
+
+.panel--history .table-wrapper,
+.panel--history .guess-history {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.panel--history .table-wrapper {
+  overflow-y: auto;
+  max-height: min(420px, 50vh);
 }
 
 .panel__title {
@@ -1125,6 +1175,46 @@ body::-webkit-scrollbar-track {
   }
 }
 
+@media (max-width: 960px) {
+  body {
+    overflow-y: auto;
+  }
+
+  .layout {
+    height: auto;
+  }
+
+  .layout__content {
+    overflow: visible;
+    padding-right: 0;
+  }
+
+  .panel--history .table-wrapper {
+    max-height: none;
+    overflow-y: visible;
+  }
+}
+
+@media (max-height: 720px) {
+  body {
+    overflow-y: auto;
+  }
+
+  .layout {
+    height: auto;
+  }
+
+  .layout__content {
+    overflow: visible;
+    padding-right: 0;
+  }
+
+  .panel--history .table-wrapper {
+    max-height: none;
+    overflow-y: visible;
+  }
+}
+
 @media (max-width: 900px) {
   .layout__header {
     padding: 1.75rem;
@@ -1193,6 +1283,10 @@ body::-webkit-scrollbar-track {
   .table-wrapper {
     overflow: visible;
     padding-bottom: 0;
+  }
+
+  .panel--history .table-wrapper {
+    overflow: visible;
   }
 
   .results-table {
