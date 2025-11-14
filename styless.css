@@ -41,7 +41,8 @@ body {
   justify-content: center;
   padding: var(--page-padding-top) var(--page-padding-inline) var(--page-padding-bottom);
   position: relative;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   scrollbar-color: rgba(148, 163, 184, 0.45) rgba(5, 10, 31, 0.6);
   scrollbar-width: thin;
 }
@@ -81,9 +82,8 @@ body::after {
   display: flex;
   flex-direction: column;
   gap: clamp(1.75rem, 3vw, 2.5rem);
-  height: calc(100vh - (var(--page-padding-top) + var(--page-padding-bottom)));
-  height: calc(100dvh - (var(--page-padding-top) + var(--page-padding-bottom)));
-  min-height: 0;
+  min-height: calc(100vh - (var(--page-padding-top) + var(--page-padding-bottom)));
+  min-height: calc(100dvh - (var(--page-padding-top) + var(--page-padding-bottom)));
 }
 
 .layout__header {
@@ -285,24 +285,6 @@ body::after {
   gap: clamp(1.5rem, 2.5vw, 2.25rem);
   min-height: 0;
   flex: 1 1 auto;
-  overflow-y: auto;
-  padding-right: 0.25rem;
-  scrollbar-color: rgba(96, 165, 250, 0.45) transparent;
-  scrollbar-width: thin;
-}
-
-.layout__content::-webkit-scrollbar {
-  width: 10px;
-}
-
-
-.layout__content::-webkit-scrollbar-thumb {
-  background: rgba(96, 165, 250, 0.45);
-  border-radius: 999px;
-}
-
-.layout__content::-webkit-scrollbar-track {
-  background: transparent;
 }
 
 .panel {
