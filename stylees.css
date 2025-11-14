@@ -413,7 +413,8 @@ body::after {
   border-radius: 999px;
   border: 1px solid rgba(148, 163, 184, 0.25);
   background: rgba(9, 16, 38, 0.82);
-  color: inherit;
+  color: var(--color-text);
+  caret-color: var(--color-accent);
   font-size: 1rem;
   transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
 }
