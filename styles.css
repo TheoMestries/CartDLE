@@ -1178,15 +1178,22 @@ body::-webkit-scrollbar-track {
 @media (max-width: 960px) {
   body {
     overflow-y: auto;
+    display: block;
+    min-height: 100%;
   }
 
   .layout {
     height: auto;
+    min-height: auto;
+    width: 100%;
   }
 
   .layout__content {
     overflow: visible;
     padding-right: 0;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(1.5rem, 2.5vw, 2.25rem);
   }
 
   .panel--history .table-wrapper {
