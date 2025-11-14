@@ -51,6 +51,13 @@ summaryAccess.refresh();
 
 const rarityIndex = new Map(rarityOrder.map((value, index) => [value, index]));
 const idLookup = new Map();
+const resultLabels = {
+  season: 'Saison',
+  collection: 'Collection',
+  type: 'Type',
+  rarity: 'Rareté',
+  collectionSize: 'Taille de la collection',
+};
 
 let hintRevealed = false;
 let pendingSummary = null;
@@ -290,6 +297,7 @@ function addGuessRow(guessCard, target) {
   const nameCell = document.createElement('th');
   nameCell.scope = 'row';
   nameCell.textContent = guessCard.name;
+  nameCell.dataset.label = 'Carte';
   row.appendChild(nameCell);
 
   row.appendChild(createResultCell(evaluation.season, 'season'));
@@ -304,6 +312,7 @@ function addGuessRow(guessCard, target) {
 function createVisualCell(card) {
   const cell = document.createElement('td');
   cell.className = 'results-table__visual';
+  cell.dataset.label = 'Visuel';
 
   if (card.imagePath) {
     const image = document.createElement('img');
@@ -324,6 +333,7 @@ function createVisualCell(card) {
 
 function createResultCell(result, category) {
   const cell = document.createElement('td');
+  cell.dataset.label = resultLabels[category] ?? '';
   const wrapper = document.createElement('span');
   wrapper.classList.add('result-cell', `result-cell--${result.status}`);
   wrapper.title = getResultHint(category, result.status);
