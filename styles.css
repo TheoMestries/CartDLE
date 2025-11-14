@@ -282,10 +282,7 @@ body::after {
 }
 
 .layout__content {
-  display: grid;
   gap: clamp(1.5rem, 2.5vw, 2.25rem);
-  grid-auto-flow: row dense;
-  grid-auto-rows: min-content;
   min-height: 0;
   flex: 1 1 auto;
   overflow-y: auto;
@@ -1153,27 +1150,7 @@ body::-webkit-scrollbar-track {
   background: transparent;
 }
 
-@media (min-width: 960px) {
-  .layout__content {
-    grid-template-columns: minmax(0, 1fr);
-    align-items: start;
-  }
 
-  .layout__content > .panel--form {
-    grid-column: 1 / -1;
-    position: sticky;
-    top: clamp(1.5rem, 3vw, 2.5rem);
-    align-self: start;
-  }
-
-  .layout__content > .panel:not(.panel--form) {
-    grid-column: 1 / -1;
-  }
-
-  .layout__content > .panel.reveal-panel {
-    grid-column: 1 / -1;
-  }
-}
 
 @media (max-width: 960px) {
   body {
