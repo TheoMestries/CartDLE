@@ -1287,6 +1287,81 @@ body::-webkit-scrollbar-track {
   }
 }
 
+@media (max-width: 480px) {
+  html {
+    font-size: 15px;
+  }
+
+  body {
+    padding: 1.25rem 0.75rem 2.5rem;
+  }
+
+  .layout {
+    gap: 1.25rem;
+  }
+
+  .layout__header {
+    padding: 1.45rem;
+    border-radius: 24px;
+  }
+
+  .layout__nav-link {
+    font-size: 0.85rem;
+    padding: 0.5rem 0.85rem;
+  }
+
+  .intro {
+    font-size: 0.95rem;
+  }
+
+  .intro--secondary {
+    font-size: 0.9rem;
+  }
+
+  .panel {
+    padding: 1.15rem;
+    border-radius: 18px;
+  }
+
+  .panel__title {
+    font-size: 1.1rem;
+  }
+
+  .guess-form__input {
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+  }
+
+  .guess-form__submit {
+    padding: 0.75rem 1.25rem;
+    font-size: 0.95rem;
+  }
+
+  .guess-form__label {
+    font-size: 0.95rem;
+  }
+
+  .hint__button,
+  .victory-actions__button,
+  .summary-button {
+    padding: 0.6rem 1.2rem;
+    font-size: 0.95rem;
+  }
+
+  .result-cell {
+    padding: 0.5rem 0.85rem;
+    font-size: 0.95rem;
+  }
+
+  .reveal {
+    gap: 1.25rem;
+  }
+
+  .reveal__image {
+    max-width: 220px;
+  }
+}
+
 @media (max-width: 420px) {
   .layout__nav {
     flex-direction: column;
@@ -1296,6 +1371,38 @@ body::-webkit-scrollbar-track {
 
   .layout__nav-link {
     width: 100%;
+  }
+}
+
+@media (max-width: 360px) {
+  html {
+    font-size: 14px;
+  }
+
+  body {
+    padding: 1rem 0.5rem 2rem;
+  }
+
+  .layout__header {
+    padding: 1.3rem;
+  }
+
+  .panel {
+    padding: 1rem;
+  }
+
+  .layout__nav-link {
+    font-size: 0.82rem;
+    padding: 0.45rem 0.75rem;
+  }
+
+  .guess-form__input,
+  .guess-form__submit {
+    font-size: 0.9rem;
+  }
+
+  .result-cell {
+    font-size: 0.9rem;
   }
 }
 
