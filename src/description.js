@@ -19,6 +19,9 @@ const guessInput = document.getElementById('guess-input');
 const feedback = document.getElementById('feedback');
 const suggestionsContainer = document.getElementById('guess-suggestions');
 const historyList = document.getElementById('guess-history');
+const hintSeasonElement = document.getElementById('hint-season');
+const hintCollectionElement = document.getElementById('hint-collection');
+const hintRarityElement = document.getElementById('hint-rarity');
 const revealSection = document.getElementById('reveal');
 const revealImage = document.getElementById('reveal-image');
 const revealName = document.getElementById('reveal-name');
@@ -55,6 +58,24 @@ const guessedIds = new Set();
 const guessHistory = [];
 let pendingSummary = null;
 
+const hintConfig = [
+  {
+    element: hintSeasonElement,
+    threshold: 1,
+    getValue: (card) => seasonLabels[card.season] ?? `Saison ${card.season}`,
+  },
+  {
+    element: hintCollectionElement,
+    threshold: 2,
+    getValue: (card) => card.collectionName,
+  },
+  {
+    element: hintRarityElement,
+    threshold: 3,
+    getValue: (card) => rarityLabels[card.rarity] ?? card.rarity,
+  },
+];
+
 cards.forEach((card) => {
   const uniqueLabel = `${card.name} (${card.collectionName})`;
   cardLookup.set(normalize(uniqueLabel), card);
@@ -71,6 +92,7 @@ const targetCard = pickDailyCard(cards, 'description');
 descriptionElement.textContent = getCardDescription(targetCard);
 
 initializeState();
+updateHints();
 
 if (revealImage) {
   revealImage.addEventListener('error', () => {
@@ -147,6 +169,7 @@ guessForm.addEventListener('submit', (event) => {
 
   guessedIds.add(guessCard.id);
   guessHistory.push(guessCard.id);
+  updateHints();
   const isCorrect = guessCard.id === targetCard.id;
   addHistoryItem(guessCard, isCorrect);
   guessInput.value = '';
@@ -187,6 +210,7 @@ function initializeState() {
   if (solved) {
     handleVictory(targetCard, { openModal: false });
   }
+
 }
 
 function persistState() {
@@ -372,6 +396,8 @@ function handleVictory(card, { openModal = true } = {}) {
       summaryController.show(summary);
     }
   }
+
+  updateHints({ forceReveal: true });
 }
 
 function revealCard(card) {
@@ -541,4 +567,21 @@ function setVictoryModalContent(card) {
     modalRevealImage.removeAttribute('src');
     modalRevealImage.alt = '';
   }
+}
+
+function updateHints({ forceReveal = false } = {}) {
+  const attempts = guessHistory.length;
+  const solved = guessHistory.includes(targetCard.id);
+  const shouldRevealAll = forceReveal || solved;
+
+  hintConfig.forEach(({ element, threshold, getValue }) => {
+    if (!element) {
+      return;
+    }
+
+    if (shouldRevealAll || attempts >= threshold) {
+      element.textContent = getValue(targetCard);
+      element.removeAttribute('data-placeholder');
+    }
+  });
 }
