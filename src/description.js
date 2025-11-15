@@ -61,17 +61,17 @@ let pendingSummary = null;
 const hintConfig = [
   {
     element: hintSeasonElement,
-    threshold: 1,
+    threshold: 4,
     getValue: (card) => seasonLabels[card.season] ?? `Saison ${card.season}`,
   },
   {
     element: hintCollectionElement,
-    threshold: 2,
+    threshold: 7,
     getValue: (card) => card.collectionName,
   },
   {
     element: hintRarityElement,
-    threshold: 3,
+    threshold: 11,
     getValue: (card) => rarityLabels[card.rarity] ?? card.rarity,
   },
 ];
