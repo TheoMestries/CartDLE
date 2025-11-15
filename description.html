@@ -65,6 +65,24 @@
           <ul id="guess-history" class="guess-history"></ul>
         </section>
 
+        <section class="panel panel--hints" aria-live="polite">
+          <h2 class="panel__title">Indices dévoilés</h2>
+          <ul class="hint-list">
+            <li class="hint-list__item">
+              <span class="hint-list__label">Saison</span>
+              <span id="hint-season" class="hint-list__value" data-placeholder>Joue une carte pour débloquer cet indice.</span>
+            </li>
+            <li class="hint-list__item">
+              <span class="hint-list__label">Collection</span>
+              <span id="hint-collection" class="hint-list__value" data-placeholder>Fais une deuxième tentative pour découvrir la collection.</span>
+            </li>
+            <li class="hint-list__item">
+              <span class="hint-list__label">Rareté</span>
+              <span id="hint-rarity" class="hint-list__value" data-placeholder>Trois tentatives révèleront la rareté.</span>
+            </li>
+          </ul>
+        </section>
+
         <section id="reveal" class="panel reveal-panel" hidden>
           <h2 class="panel__title">Carte révélée</h2>
           <div class="reveal">
