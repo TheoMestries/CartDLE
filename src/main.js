@@ -59,7 +59,24 @@ const resultLabels = {
   collectionSize: 'Taille de la collection',
 };
 
-let hintRevealed = false;
+const hintStages = [
+  {
+    threshold: 4,
+    getText: (card, index) =>
+      `Indice ${index} — Saison : ${seasonLabels[card.season] ?? `Saison ${card.season}`}.`,
+  },
+  {
+    threshold: 7,
+    getText: (card, index) =>
+      `Indice ${index} — Collection : « ${card.collectionName} ».`,
+  },
+  {
+    threshold: 11,
+    getText: (card, index) => `Indice ${index} — ${card.description}`,
+  },
+];
+
+let revealedHintCount = 0;
 let pendingSummary = null;
 
 cards.forEach((card) => {
@@ -461,8 +478,8 @@ function revealCard(card, { showModal = true } = {}) {
   }`;
   revealDescription.textContent = card.description;
 
-  if (hintContent && hintRevealed) {
-    hintContent.textContent = card.description;
+  if (hintContent && revealedHintCount > 0) {
+    renderHintContent();
   }
 
   if (card.imagePath) {
@@ -522,25 +539,48 @@ function closeVictoryModal() {
 }
 
 function updateHintAvailability() {
-  if (!hintButton || hintRevealed) {
+  if (!hintButton) {
+    return;
+  }
+
+  if (revealedHintCount >= hintStages.length) {
+    hintButton.hidden = true;
+    hintButton.disabled = true;
     return;
   }
 
   const attempts = guessedIds.size;
-  if (attempts >= 8) {
+  const nextStage = hintStages[revealedHintCount];
+  if (attempts >= nextStage.threshold) {
     hintButton.hidden = false;
     hintButton.disabled = false;
+    hintButton.textContent = `Révéler l'indice ${revealedHintCount + 1}`;
+  } else {
+    hintButton.hidden = true;
+    hintButton.disabled = true;
   }
 }
 
 function revealHint() {
-  if (!hintButton || !hintContent || hintRevealed) {
+  if (!hintButton || !hintContent) {
     return;
   }
 
-  hintRevealed = true;
-  showHintContent();
+  if (revealedHintCount >= hintStages.length) {
+    return;
+  }
+
+  const nextStage = hintStages[revealedHintCount];
+  if (guessedIds.size < nextStage.threshold) {
+    return;
+  }
+
+  revealedHintCount += 1;
+  hintButton.disabled = true;
+  hintButton.hidden = true;
+  renderHintContent();
   persistState();
+  updateHintAvailability();
 }
 
 function disableHint() {
@@ -606,10 +646,16 @@ function initializeState() {
     addGuessRow(card, targetCard);
   });
 
-  hintRevealed = Boolean(state.hintRevealed);
-  if (hintRevealed) {
-    showHintContent();
+  const storedStage = Number.isInteger(state.hintStage)
+    ? Math.max(0, Math.min(state.hintStage, hintStages.length))
+    : 0;
+  revealedHintCount = storedStage;
+
+  if (revealedHintCount === 0 && state.hintRevealed) {
+    revealedHintCount = hintStages.length;
   }
+
+  renderHintContent();
 
   updateHintAvailability();
 
@@ -618,23 +664,36 @@ function initializeState() {
   }
 }
 
-function showHintContent() {
-  if (!hintContent || !hintButton) {
+function renderHintContent() {
+  if (!hintContent) {
     return;
   }
 
-  hintContent.textContent = targetCard.description;
+  hintContent.innerHTML = '';
+
+  if (revealedHintCount === 0) {
+    hintContent.hidden = true;
+    return;
+  }
+
+  const fragment = document.createDocumentFragment();
+  hintStages.slice(0, revealedHintCount).forEach((stage, index) => {
+    const entry = document.createElement('p');
+    entry.className = 'hint__entry';
+    entry.textContent = stage.getText(targetCard, index + 1);
+    fragment.appendChild(entry);
+  });
+
+  hintContent.appendChild(fragment);
   hintContent.hidden = false;
-  hintButton.hidden = false;
-  hintButton.textContent = 'Indice révélé';
-  hintButton.disabled = true;
 }
 
 function persistState() {
   const state = {
     targetId: targetCard.id,
     guesses: Array.from(guessHistory),
-    hintRevealed,
+    hintStage: revealedHintCount,
+    hintRevealed: revealedHintCount > 0,
   };
   saveStoredState(STORAGE_KEY, state);
 }

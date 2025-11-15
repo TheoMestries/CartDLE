@@ -536,13 +536,19 @@ body::after {
 }
 
 .hint__content {
-  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
   line-height: 1.55;
   color: rgba(226, 232, 240, 0.95);
 }
 
 .hint__content[hidden] {
   display: none;
+}
+
+.hint__entry {
+  margin: 0;
 }
 
 .victory-actions {
