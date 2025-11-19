@@ -365,7 +365,7 @@ function createResultCell(result, category) {
 }
 
 function evaluateGuess(guess, target) {
-  const seasonStatus = guess.seasonGroup === target.seasonGroup ? 'correct' : 'incorrect';
+  const seasonStatus = guess.season === target.season ? 'correct' : 'incorrect';
   const guessCollectionLabel = guess.collectionName;
   const targetType = typeLabels[target.type] ?? target.type;
   const guessType = typeLabels[guess.type] ?? guess.type;
