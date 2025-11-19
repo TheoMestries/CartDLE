@@ -1,9 +1,5 @@
 import cards from './data/index.js';
-import {
-  rarityLabels,
-  seasonLabels,
-  typeLabels,
-} from './config/constants.js';
+import { rarityLabels, typeLabels } from './config/constants.js';
 import { GameModes, recordVictory } from './shared/dailySummary.js';
 import { markModeCompleted, syncNavCompletion } from './shared/navCompletion.js';
 import { setupSummaryModal } from './shared/summaryModal.js';
@@ -407,9 +403,9 @@ function normalize(value) {
 }
 
 function getCardMeta(card) {
-  return `${seasonLabels[card.season] ?? `Saison ${card.season}`} · ${card.collectionName} · ${
-    rarityLabels[card.rarity] ?? card.rarity
-  } · ${typeLabels[card.type] ?? card.type}`;
+  return `${card.seasonGroupLabel} · ${card.collectionName} · ${rarityLabels[card.rarity] ?? card.rarity} · ${
+    typeLabels[card.type] ?? card.type
+  }`;
 }
 
 function getCardDescription(card) {

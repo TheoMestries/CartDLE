@@ -1,11 +1,14 @@
 import season1Cards from './season1.js';
 import season2Cards from './season2.js';
-import { rarityLabels, typeLabels } from '../config/constants.js';
+import { rarityLabels, seasonLabels, typeLabels } from '../config/constants.js';
 
-const allCollections = [...season1Cards, ...season2Cards];
+const collections = [...season1Cards, ...season2Cards];
+const allCollections = collections;
+const collectionMeta = buildCollectionMeta(collections);
 
-const cards = allCollections.flatMap((collection) => {
-  const collectionSize = collection.cards.length;
+const cards = collections.flatMap((collection) => {
+  const meta = collectionMeta.get(collection.collection_id);
+  const seasonLabel = seasonLabels[collection.season_id] ?? `Saison ${collection.season_id}`;
   return collection.cards
     .map((cardEntry, index) => {
       const [name, description, image, type, rarity] = cardEntry;
@@ -24,9 +27,12 @@ const cards = allCollections.flatMap((collection) => {
         typeLabel: typeLabels[type] ?? typeLabels.character,
         rarityLabel: rarityLabels[rarity] ?? rarity,
         season: collection.season_id,
+        seasonLabel,
+        seasonGroup: meta.seasonKey,
+        seasonGroupLabel: meta.seasonLabel,
         collectionId: collection.collection_id,
         collectionName: collection.collection_name,
-        collectionSize,
+        collectionSize: meta.totalSize,
         collectionImage: collection.collection_image,
         imagePath: computeImagePath(
           collection.season_id,
@@ -40,6 +46,35 @@ const cards = allCollections.flatMap((collection) => {
 
 export default cards;
 export { allCollections };
+
+function buildCollectionMeta(collections) {
+  const metaMap = new Map();
+
+  collections.forEach((collection) => {
+    if (!metaMap.has(collection.collection_id)) {
+      metaMap.set(collection.collection_id, {
+        totalSize: 0,
+        seasonIds: new Set(),
+        seasonLabel: '',
+        seasonKey: '',
+      });
+    }
+
+    const meta = metaMap.get(collection.collection_id);
+    meta.totalSize += collection.cards.length;
+    meta.seasonIds.add(collection.season_id);
+  });
+
+  metaMap.forEach((meta) => {
+    const seasons = Array.from(meta.seasonIds).sort((a, b) => a - b);
+    meta.seasonKey = seasons.join('-');
+    meta.seasonLabel = seasons.length > 1
+      ? `Saison ${meta.seasonKey}`
+      : seasonLabels[seasons[0]] ?? `Saison ${seasons[0]}`;
+  });
+
+  return metaMap;
+}
 
 function createCardId(seasonId, collectionId, index) {
   const position = String(index + 1).padStart(3, '0');
