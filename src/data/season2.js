@@ -251,7 +251,7 @@ const season2Cards = [
         "collection_name": "Chroniques de Leif",
         "collection_description": "Collection des JDR se déroulant dans l'univers de Chroniques de Leif",
         "collection_image": "collection6.png",
-        "season_id": 1,
+        "season_id": 2,
         "cards": [
             ["Archibald - Terreur de Clairval", "Sa lumière fut éteinte injustement par la haine des hommes. Il rêvait de créer et réinventer le monde, à la place, la discorde et la zizanie furent son héritage. Attendez... On devait pas l'oublier lui ?", "archibald.gif", CardTypes.Classic, CardRarity.Legacy],
             ["Héritage de Druco", "Élue par le peuple comme la carte la plus appréciée de la saison 1 ! ", "druco.gif", CardTypes.Classic, CardRarity.Legacy],
