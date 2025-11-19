@@ -8,6 +8,7 @@ const collectionMeta = buildCollectionMeta(collections);
 
 const cards = collections.flatMap((collection) => {
   const meta = collectionMeta.get(collection.collection_id);
+  const seasonLabel = seasonLabels[collection.season_id] ?? `Saison ${collection.season_id}`;
   return collection.cards
     .map((cardEntry, index) => {
       const [name, description, image, type, rarity] = cardEntry;
@@ -26,8 +27,9 @@ const cards = collections.flatMap((collection) => {
         typeLabel: typeLabels[type] ?? typeLabels.character,
         rarityLabel: rarityLabels[rarity] ?? rarity,
         season: collection.season_id,
+        seasonLabel,
         seasonGroup: meta.seasonKey,
-        seasonLabel: meta.seasonLabel,
+        seasonGroupLabel: meta.seasonLabel,
         collectionId: collection.collection_id,
         collectionName: collection.collection_name,
         collectionSize: meta.totalSize,

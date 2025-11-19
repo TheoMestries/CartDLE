@@ -57,7 +57,7 @@ const resultLabels = {
 const hintStages = [
   {
     threshold: 4,
-    getText: (card, index) => `Indice ${index} — Saison : ${card.seasonLabel}.`,
+    getText: (card, index) => `Indice ${index} — Saison : ${card.seasonGroupLabel}.`,
   },
   {
     threshold: 7,
@@ -377,7 +377,7 @@ function evaluateGuess(guess, target) {
 
   return {
     season: {
-      value: guess.seasonLabel,
+      value: guess.seasonGroupLabel,
       status: seasonStatus,
     },
     collection: {
@@ -483,7 +483,7 @@ function mulberry32(seed) {
 
 function revealCard(card, { showModal = true } = {}) {
   revealName.textContent = card.name;
-  revealMeta.textContent = `${card.seasonLabel} · ${card.collectionName} · ${
+  revealMeta.textContent = `${card.seasonGroupLabel} · ${card.collectionName} · ${
     rarityLabels[card.rarity] ?? card.rarity
   }`;
   revealDescription.textContent = card.description;
@@ -771,7 +771,7 @@ function showReviewButton() {
 }
 
 function getCardMeta(card) {
-  return `${card.seasonLabel} · ${card.collectionName} · ${rarityLabels[card.rarity] ?? card.rarity} · ${
+  return `${card.seasonGroupLabel} · ${card.collectionName} · ${rarityLabels[card.rarity] ?? card.rarity} · ${
     typeLabels[card.type] ?? card.type
   }`;
 }

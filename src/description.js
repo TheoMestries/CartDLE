@@ -58,7 +58,7 @@ const hintConfig = [
   {
     element: hintSeasonElement,
     threshold: 4,
-    getValue: (card) => card.seasonLabel,
+    getValue: (card) => card.seasonGroupLabel,
   },
   {
     element: hintCollectionElement,
@@ -425,7 +425,7 @@ function normalize(value) {
 }
 
 function getCardMeta(card) {
-  return `${card.seasonLabel} · ${card.collectionName} · ${rarityLabels[card.rarity] ?? card.rarity} · ${
+  return `${card.seasonGroupLabel} · ${card.collectionName} · ${rarityLabels[card.rarity] ?? card.rarity} · ${
     typeLabels[card.type] ?? card.type
   }`;
 }
