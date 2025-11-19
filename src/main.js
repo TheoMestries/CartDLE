@@ -1,10 +1,5 @@
 import cards from './data/index.js';
-import {
-  rarityOrder,
-  rarityLabels,
-  typeLabels,
-  seasonLabels,
-} from './config/constants.js';
+import { rarityOrder, rarityLabels, typeLabels } from './config/constants.js';
 import { GameModes, recordVictory } from './shared/dailySummary.js';
 import { markModeCompleted, syncNavCompletion } from './shared/navCompletion.js';
 import { setupSummaryModal } from './shared/summaryModal.js';
@@ -62,8 +57,7 @@ const resultLabels = {
 const hintStages = [
   {
     threshold: 4,
-    getText: (card, index) =>
-      `Indice ${index} — Saison : ${seasonLabels[card.season] ?? `Saison ${card.season}`}.`,
+    getText: (card, index) => `Indice ${index} — Saison : ${card.seasonLabel}.`,
   },
   {
     threshold: 7,
@@ -383,7 +377,7 @@ function evaluateGuess(guess, target) {
 
   return {
     season: {
-      value: seasonLabels[guess.season] ?? `Saison ${guess.season}`,
+      value: guess.seasonLabel,
       status: seasonStatus,
     },
     collection: {
@@ -489,7 +483,7 @@ function mulberry32(seed) {
 
 function revealCard(card, { showModal = true } = {}) {
   revealName.textContent = card.name;
-  revealMeta.textContent = `${seasonLabels[card.season] ?? `Saison ${card.season}`} · ${card.collectionName} · ${
+  revealMeta.textContent = `${card.seasonLabel} · ${card.collectionName} · ${
     rarityLabels[card.rarity] ?? card.rarity
   }`;
   revealDescription.textContent = card.description;
@@ -777,7 +771,7 @@ function showReviewButton() {
 }
 
 function getCardMeta(card) {
-  return `${seasonLabels[card.season] ?? `Saison ${card.season}`} · ${card.collectionName} · ${
-    rarityLabels[card.rarity] ?? card.rarity
-  } · ${typeLabels[card.type] ?? card.type}`;
+  return `${card.seasonLabel} · ${card.collectionName} · ${rarityLabels[card.rarity] ?? card.rarity} · ${
+    typeLabels[card.type] ?? card.type
+  }`;
 }
