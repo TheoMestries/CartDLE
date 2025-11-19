@@ -403,7 +403,7 @@ function normalize(value) {
 }
 
 function getCardMeta(card) {
-  return `${card.seasonGroupLabel} · ${card.collectionName} · ${rarityLabels[card.rarity] ?? card.rarity} · ${
+  return `${card.seasonLabel} · ${card.collectionName} · ${rarityLabels[card.rarity] ?? card.rarity} · ${
     typeLabels[card.type] ?? card.type
   }`;
 }
