@@ -247,7 +247,7 @@ const season2Cards = [
     },
 
     {
-        "collection_id": 6,
+    "collection_id": 6,
         "collection_name": "Chroniques de Leif",
         "collection_description": "Collection des JDR se déroulant dans l'univers de Chroniques de Leif",
         "collection_image": "collection6.png",
