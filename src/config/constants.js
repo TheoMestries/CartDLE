@@ -9,15 +9,17 @@ export const CardRarity = Object.freeze({
   Rare: 'rare',
   Epic: 'epic',
   Legendary: 'legendary',
+  Legacy: 'legacy',
 });
 
-export const rarityOrder = ['common', 'rare', 'epic', 'legendary'];
+export const rarityOrder = ['common', 'rare', 'epic', 'legendary', 'legacy'];
 
 export const rarityLabels = {
   common: 'Commune',
   rare: 'Rare',
   epic: 'Épique',
   legendary: 'Légendaire',
+  legacy: 'Legacy',
 };
 
 export const typeLabels = {
