@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CartDLE</title>
+    <title>CartDLE – Visuels alternatifs</title>
     <link rel="stylesheet" href="styleess.css" />
   </head>
   <body>
@@ -16,26 +16,35 @@
             class="layout__logo"
           />
           <nav class="layout__nav" aria-label="Modes de jeu">
-            <a class="layout__nav-link layout__nav-link--active" href="index.html" data-mode="classic">Indices classiques</a>
+            <a class="layout__nav-link" href="index.html" data-mode="classic">Indices classiques</a>
             <a class="layout__nav-link" href="description.html" data-mode="description">Description mystère</a>
             <a class="layout__nav-link" href="zoom.html" data-mode="zoom">Zoom mystère</a>
-            <a class="layout__nav-link" href="alternate.html" data-mode="alternate">Visuels alternatifs</a>
+            <a class="layout__nav-link layout__nav-link--active" href="alternate.html" data-mode="alternate">Visuels alternatifs</a>
           </nav>
         </div>
         <div class="layout__header-content">
           <p class="intro">
-            Devinez la carte mystère en vous aidant des indices sur la saison, la collection, le type,
-            la rareté et le nombre de cartes dans la collection.
+            Identifie les 30 visuels alternatifs des cartes CartDLE. L'ordre est aléatoire et la série redémarre
+            après 3 erreurs.
           </p>
-          <p class="intro intro--secondary">Une nouvelle carte est proposée chaque jour.</p>
+          <p class="intro intro--secondary">Complète la série en une journée pour valider le mode.</p>
           <button id="summary-button" class="summary-button" type="button" hidden>
             Revoir le bilan du jour
           </button>
         </div>
       </header>
 
-      <div class="layout__content">
+      <div class="layout__content layout__content--stacked">
         <section class="panel panel--form">
+          <div class="alternate-status">
+            <p id="alternate-progress" class="alternate-status__item">0 / 30 images</p>
+            <p id="alternate-errors" class="alternate-status__item">Erreurs : 0 / 3</p>
+          </div>
+          <div class="alternate-viewer">
+            <img id="alternate-image" class="alternate-viewer__image" alt="Carte mystère" />
+            <p class="alternate-viewer__hint">Reconnais la carte associée à ce visuel alternatif.</p>
+          </div>
+
           <form id="guess-form" autocomplete="off" class="guess-form">
             <label class="guess-form__label" for="guess-input">Nom de la carte</label>
             <div class="guess-form__controls">
@@ -54,37 +63,11 @@
             </div>
           </form>
           <p id="feedback" class="feedback" role="status" aria-live="polite"></p>
-          <div class="hint">
-            <button id="hint-button" class="hint__button" type="button" hidden>
-              Besoin d'un indice ?
-            </button>
-            <div id="hint-content" class="hint__content" hidden></div>
-          </div>
-          <div class="victory-actions">
-            <button id="review-button" class="victory-actions__button" type="button" hidden>
-              Revoir les résultats
-            </button>
-          </div>
         </section>
 
         <section class="panel panel--history">
           <h2 class="panel__title">Historique des tentatives</h2>
-          <div class="table-wrapper">
-            <table id="results" class="results-table">
-              <thead>
-                <tr>
-                  <th scope="col" class="results-table__visual-heading">Visuel</th>
-                  <th scope="col">Carte</th>
-                  <th scope="col">Saison</th>
-                  <th scope="col">Collection</th>
-                  <th scope="col">Type</th>
-                  <th scope="col">Rareté</th>
-                  <th scope="col">Taille de la collection</th>
-                </tr>
-              </thead>
-              <tbody></tbody>
-            </table>
-          </div>
+          <ol id="guess-history" class="guess-history" aria-live="polite"></ol>
         </section>
       </div>
 
@@ -102,15 +85,14 @@
             ×
           </button>
           <div class="modal__content">
-            <h2 id="victory-title" class="modal__title">Félicitations !</h2>
-            <p class="modal__subtitle">Tu as trouvé la carte mystère.</p>
-            <div id="reveal" class="reveal">
-              <img id="reveal-image" class="reveal__image" alt="" />
-              <div class="reveal__content">
-                <h3 id="reveal-name" class="reveal__name"></h3>
-                <p id="reveal-meta" class="reveal__meta"></p>
-                <p id="reveal-description" class="reveal__description"></p>
-              </div>
+            <h2 id="victory-title" class="modal__title">Série réussie !</h2>
+            <p class="modal__subtitle" id="victory-subtitle">
+              Tu as identifié les 30 visuels avec moins de 3 erreurs.
+            </p>
+            <div class="victory-summary">
+              <p><strong>Images trouvées :</strong> <span id="victory-found"></span></p>
+              <p><strong>Erreurs commises :</strong> <span id="victory-errors"></span></p>
+              <p><strong>Tentatives :</strong> <span id="victory-attempts"></span></p>
             </div>
           </div>
         </div>
@@ -139,6 +121,6 @@
       </div>
     </main>
 
-    <script type="module" src="src/main.js"></script>
+    <script type="module" src="src/alternate.js"></script>
   </body>
 </html>

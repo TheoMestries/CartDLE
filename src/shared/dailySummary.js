@@ -5,12 +5,14 @@ export const GameModes = Object.freeze({
   Classic: 'classic',
   Description: 'description',
   Zoom: 'zoom',
+  Alternate: 'alternate',
 });
 
 const defaultModeLabels = {
   [GameModes.Classic]: 'Indices classiques',
   [GameModes.Description]: 'Description mystère',
   [GameModes.Zoom]: 'Zoom mystère',
+  [GameModes.Alternate]: 'Visuels alternatifs',
 };
 
 export function recordVictory(mode, entry) {

@@ -142,7 +142,8 @@ export function setupSummaryModal({
 
     const formattedDate = formatDate(summaryState.date);
     const dateLabel = formattedDate ? ` du ${formattedDate}` : '';
-    subtitleElement.textContent = `Tu as complété les 3 modes${dateLabel}.`;
+    const totalModes = Object.values(GameModes).length;
+    subtitleElement.textContent = `Tu as complété les ${totalModes} modes${dateLabel}.`;
   }
 
   function updateStreak(summaryState) {
