@@ -23,6 +23,7 @@ const victoryErrors = document.getElementById('victory-errors');
 const victoryAttempts = document.getElementById('victory-attempts');
 const victoryClose = document.getElementById('victory-close');
 const modalOverlay = victoryModal?.querySelector('[data-close]');
+const galleryLink = document.getElementById('alternate-gallery-link');
 
 const summaryController = setupSummaryModal({
   onClose: () => {
@@ -470,6 +471,7 @@ function handleVictory({ openModal = true } = {}) {
   }
   hideSuggestions();
   updateVictoryModal({ attempts });
+  showGalleryLink();
   updateStatus();
   persistState();
 
@@ -496,6 +498,14 @@ function updateVictoryModal({ attempts }) {
   if (victoryAttempts) {
     victoryAttempts.textContent = String(attempts);
   }
+}
+
+function showGalleryLink() {
+  if (!galleryLink) {
+    return;
+  }
+
+  galleryLink.hidden = false;
 }
 
 function showVictoryModal() {

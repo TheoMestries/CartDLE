@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CartDLE – Galerie altered</title>
+    <link rel="stylesheet" href="styleess.css" />
+  </head>
+  <body>
+    <main class="layout">
+      <header class="layout__header">
+        <div class="layout__header-top">
+          <img
+            src="e6177063-f672-4003-8c26-7aa8ea4a0d0d.png"
+            alt="CartDLE"
+            class="layout__logo"
+          />
+          <nav class="layout__nav" aria-label="Modes de jeu">
+            <a class="layout__nav-link" href="index.html" data-mode="classic">Indices classiques</a>
+            <a class="layout__nav-link" href="description.html" data-mode="description">Description mystère</a>
+            <a class="layout__nav-link" href="zoom.html" data-mode="zoom">Zoom mystère</a>
+            <a class="layout__nav-link" href="alternate.html" data-mode="alternate">Visuels alternatifs</a>
+          </nav>
+        </div>
+        <div class="layout__header-content">
+          <p class="intro">Bravo pour la série ! Voici les 30 visuels altered à revoir à volonté.</p>
+          <a class="summary-button" href="alternate.html">Retour au mode visuels alternatifs</a>
+        </div>
+      </header>
+
+      <section class="panel">
+        <div class="gallery-header">
+          <h2 class="panel__title">Galerie des 30 cartes</h2>
+          <p id="gallery-count" class="gallery-count"></p>
+        </div>
+        <ul id="altered-gallery" class="altered-gallery" aria-live="polite"></ul>
+        <p id="altered-gallery-empty" class="feedback" hidden></p>
+      </section>
+    </main>
+
+    <script type="module" src="src/alteredGallery.js"></script>
+  </body>
+</html>
