@@ -24,6 +24,7 @@ const alternateImages = [
     collectionName: 'Taverne', // nom de la collection affiché
   },
   // Ajoute tes entrées ici (jusqu’à 30 ou plus) en dupliquant le bloc ci-dessus.
+
 ];
 
 export default alternateImages;
