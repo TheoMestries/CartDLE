@@ -12,7 +12,7 @@ const defaultModeLabels = {
   [GameModes.Classic]: 'Indices classiques',
   [GameModes.Description]: 'Description mystère',
   [GameModes.Zoom]: 'Zoom mystère',
-  [GameModes.Alternate]: 'Visuels alternatifs',
+  [GameModes.Alternate]: 'Visuels spécial noel',
 };
 
 export function recordVictory(mode, entry) {
