@@ -454,11 +454,11 @@ function handleVictory({ openModal = true } = {}) {
   const errorLabel = `${errorCount} erreur${errorCount > 1 ? 's' : ''}`;
   const result = recordVictory(GameModes.Alternate, {
     cardId: lastCorrectEntry?.cardId ?? order[order.length - 1] ?? '',
-    cardName: 'Visuels alternatifs',
+    cardName: 'Visuels spécial noel',
     attempts,
     meta: `${order.length} images · ${errorLabel}`,
     description: 'Défi des visuels alternatifs terminé.',
-    modeLabel: 'Visuels alternatifs',
+    modeLabel: 'Visuels spécial noel',
   });
 
   summaryAccess.refresh(result.summary);

@@ -1,8 +1,8 @@
 import cards from './data/index.js';
 import alternateImages from './data/alternateImages.js';
 
-const galleryList = document.getElementById('altered-gallery');
-const emptyMessage = document.getElementById('altered-gallery-empty');
+const galleryList = document.getElementById('special-noel-gallery');
+const emptyMessage = document.getElementById('special-noel-gallery-empty');
 const galleryCount = document.getElementById('gallery-count');
 
 const idLookup = new Map(cards.map((card) => [card.id, card]));
@@ -42,10 +42,10 @@ if (entries.length === 0) {
 
 function createGalleryItem(entry, position) {
   const item = document.createElement('li');
-  item.className = 'altered-gallery__item';
+  item.className = 'special-noel-gallery__item';
 
   const image = document.createElement('img');
-  image.className = 'altered-gallery__image';
+  image.className = 'special-noel-gallery__image';
   image.src = entry.imagePath;
   image.alt = `Visuel alternatif ${position} : ${entry.cardName}`;
   image.loading = 'lazy';
