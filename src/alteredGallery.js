@@ -50,29 +50,7 @@ function createGalleryItem(entry, position) {
   image.alt = `Visuel alternatif ${position} : ${entry.cardName}`;
   image.loading = 'lazy';
 
-  const content = document.createElement('div');
-  content.className = 'altered-gallery__content';
-
-  const title = document.createElement('h3');
-  title.className = 'altered-gallery__title';
-  title.textContent = entry.cardName;
-
-  const meta = document.createElement('p');
-  meta.className = 'altered-gallery__meta';
-  meta.textContent = entry.collectionName;
-
-  const details = document.createElement('p');
-  details.className = 'altered-gallery__details';
-  details.textContent = entry.card
-    ? `${entry.card.seasonLabel} · ${entry.card.collectionName}`
-    : entry.collectionName;
-
-  content.appendChild(title);
-  content.appendChild(meta);
-  content.appendChild(details);
-
   item.appendChild(image);
-  item.appendChild(content);
 
   return item;
 }
