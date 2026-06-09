@@ -31,4 +31,5 @@ export const typeLabels = {
 export const seasonLabels = {
   1: 'Saison 1',
   2: 'Saison 2',
+  3: 'Saison 3',
 };

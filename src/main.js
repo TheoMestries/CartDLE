@@ -1,5 +1,6 @@
 import cards from './data/index.js';
 import { rarityOrder, rarityLabels, typeLabels } from './config/constants.js';
+import { pickBalancedDailyCard } from './shared/dailyCard.js';
 import { GameModes, recordVictory } from './shared/dailySummary.js';
 import { markModeCompleted, syncNavCompletion } from './shared/navCompletion.js';
 import { setupSummaryModal } from './shared/summaryModal.js';
@@ -86,7 +87,7 @@ cards.forEach((card) => {
   nameLookup.get(nameKey).push(card);
 });
 
-const targetCard = pickDailyCard(cards);
+const targetCard = pickBalancedDailyCard(cards, 'classic');
 
 initializeState();
 
@@ -222,6 +223,10 @@ function createSuggestionItem(card) {
   name.className = 'guess-suggestion__name';
   name.textContent = card.name;
   content.appendChild(name);
+  const meta = document.createElement('span');
+  meta.className = 'guess-suggestion__meta';
+  meta.textContent = `${card.seasonLabel} · ${card.collectionName}`;
+  content.appendChild(meta);
 
   button.appendChild(visual);
   button.appendChild(content);
@@ -452,33 +457,6 @@ function compareNumbers(a, b) {
     return 'correct';
   }
   return a < b ? 'higher' : 'lower';
-}
-
-function pickDailyCard(list) {
-  const date = new Date();
-  const key = `${date.getUTCFullYear()}-${date.getUTCMonth() + 1}-${date.getUTCDate()}`;
-  const seed = hashStringToSeed(key);
-  const random = mulberry32(seed);
-  const index = Math.floor(random() * list.length);
-  return list[index];
-}
-
-function hashStringToSeed(value) {
-  let hash = 1779033703 ^ value.length;
-  for (let i = 0; i < value.length; i += 1) {
-    hash = Math.imul(hash ^ value.charCodeAt(i), 3432918353);
-    hash = (hash << 13) | (hash >>> 19);
-  }
-  return hash >>> 0;
-}
-
-function mulberry32(seed) {
-  return function generate() {
-    let t = (seed += 0x6d2b79f5);
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
 }
 
 function revealCard(card, { showModal = true } = {}) {

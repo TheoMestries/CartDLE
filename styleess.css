@@ -859,6 +859,11 @@ body::after {
   letter-spacing: 0.01em;
 }
 
+.guess-suggestion__meta {
+  color: rgba(226, 232, 240, 0.62);
+  font-size: 0.76rem;
+}
+
 .table-wrapper {
   position: relative;
   overflow-x: auto;

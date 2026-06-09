@@ -9,6 +9,9 @@ la saison, la collection, le type (personnage ou lieu), la rareté et la taille 
 2. Utilisez la zone de saisie pour rechercher une carte (la liste déroulante propose toutes les cartes disponibles).
 3. Comparez les indices pour approcher de la bonne carte. Une nouvelle carte est proposée chaque jour.
 
+Pour utiliser le PvP en ligne, lancez plutôt `npm start`, puis ouvrez `http://localhost:3002/duel.html`. L’adresse
+utilisée dans le lien d’invitation doit être accessible par les deux joueurs.
+
 ## Indices disponibles
 
 | Indice | Description |
@@ -20,3 +23,22 @@ la saison, la collection, le type (personnage ou lieu), la rareté et la taille 
 | Taille de la collection | Compare le nombre total de cartes dans la collection avec des indications ↑ ou ↓. |
 
 Bravo si vous trouvez la carte mystère !
+
+La carte quotidienne alterne équitablement entre les Saisons 1, 2 et 3 avant d’être choisie dans la saison du jour.
+
+## CartDLE Arène
+
+Le mode `duel.html` transforme la collection en jeu de cartes stratégique jouable contre trois niveaux de bots,
+à deux joueurs en local ou en PvP en ligne par lien d’invitation. Chaque deck réunit une collection de chaque saison.
+Chaque camp construit une escouade de cinq cartes, gère une réserve d'énergie croissante et cherche à réduire le
+noyau adverse à zéro.
+
+- Chaque carte reçoit une origine de collection et deux traits déduits de son nom, sa description et son identité propre.
+- Réunir `2` ou `4` cartes d'une même collection ou d'un même trait active un nouveau palier de composition.
+- Assaut, Rempart, Arcaniste, Soutien, Tireur, Survivant et Stratège produisent des effets de combat différents.
+- L'initiative est aléatoire ; les deux joueurs commencent par un déploiement sans combat, puis le premier joueur lance le premier assaut.
+- Le second joueur reçoit une carte et une énergie bonus pour préparer sa réplique.
+- Chaque carte légendaire possède un pouvoir unique inspiré de son identité et de son univers.
+- La Surcharge donne `+2` énergie une fois par partie.
+- Une pioche vide inflige des dégâts de fatigue croissants.
+- Les salons PvP expirent après six heures d’inactivité et sont réinitialisés si le serveur redémarre.

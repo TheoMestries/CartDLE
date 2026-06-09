@@ -1,5 +1,6 @@
 import cards from './data/index.js';
 import { rarityLabels, typeLabels } from './config/constants.js';
+import { pickBalancedDailyCard } from './shared/dailyCard.js';
 import { GameModes, recordVictory } from './shared/dailySummary.js';
 import { markModeCompleted, syncNavCompletion } from './shared/navCompletion.js';
 import { setupSummaryModal } from './shared/summaryModal.js';
@@ -71,7 +72,7 @@ cards.forEach((card) => {
 
 const imageCards = cards.filter((card) => Boolean(card.imagePath));
 const targetPool = imageCards.length > 0 ? imageCards : cards;
-const targetCard = pickDailyCard(targetPool, 'zoom');
+const targetCard = pickBalancedDailyCard(targetPool, 'zoom');
 
 let zoomLevel = MAX_ZOOM;
 updateZoom();
@@ -261,6 +262,10 @@ function createSuggestionItem(card) {
   name.className = 'guess-suggestion__name';
   name.textContent = card.name;
   content.appendChild(name);
+  const meta = document.createElement('span');
+  meta.className = 'guess-suggestion__meta';
+  meta.textContent = `${card.seasonLabel} · ${card.collectionName}`;
+  content.appendChild(meta);
 
   button.appendChild(content);
 
@@ -469,17 +474,6 @@ function setVictoryModalSubtitle(message) {
   }
 
   victorySubtitle.textContent = message;
-}
-
-function pickDailyCard(list, salt = '') {
-  const date = new Date();
-  const key = `${date.getUTCFullYear()}-${date.getUTCMonth() + 1}-${date.getUTCDate()}-${salt}`;
-  let hash = 0;
-  for (const char of key) {
-    hash = (hash * 31 + char.charCodeAt(0)) % 2147483647;
-  }
-  const index = hash % list.length;
-  return list[index];
 }
 
 function openVictoryModal(card) {

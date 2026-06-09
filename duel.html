@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CartDLE · Arène</title>
+    <link rel="stylesheet" href="styleess.css" />
+    <link rel="stylesheet" href="duel.css" />
+  </head>
+  <body class="arena-page">
+    <main class="layout layout--arena">
+      <header class="layout__header arena-header">
+        <div class="layout__header-top">
+          <img
+            src="e6177063-f672-4003-8c26-7aa8ea4a0d0d.png"
+            alt="CartDLE"
+            class="layout__logo"
+          />
+          <nav class="layout__nav" aria-label="Modes de jeu">
+            <a class="layout__nav-link" href="index.html" data-mode="classic">Indices classiques</a>
+            <a class="layout__nav-link" href="description.html" data-mode="description">Description mystère</a>
+            <a class="layout__nav-link" href="zoom.html" data-mode="zoom">Zoom mystère</a>
+            <a class="layout__nav-link" href="alternate.html" data-mode="alternate">Visuels spécial noël</a>
+            <a class="layout__nav-link layout__nav-link--active" href="duel.html" data-mode="duel">Arène</a>
+          </nav>
+        </div>
+        <div class="layout__header-content arena-header__content">
+          <div>
+            <p class="arena-kicker">Nouveau mode stratégique</p>
+            <h1 class="arena-title">CartDLE Arène</h1>
+            <p class="intro">
+              Assemble une composition, active ses traits et mène ton escouade jusqu’au noyau adverse.
+            </p>
+          </div>
+          <div class="arena-record" aria-label="Victoires enregistrées">
+            <span class="arena-record__label">Victoires</span>
+            <strong id="record-wins" class="arena-record__value">0</strong>
+          </div>
+        </div>
+      </header>
+
+      <section class="arena-shell" aria-label="Partie CartDLE Arène">
+        <div class="arena-toolbar">
+          <div>
+            <p id="round-label" class="arena-toolbar__round">Manche 1</p>
+            <p id="status-message" class="arena-toolbar__status" role="status" aria-live="polite">
+              Choisis un mode pour lancer le duel.
+            </p>
+            <div id="featured-collections" class="featured-collections" hidden></div>
+          </div>
+          <div class="arena-toolbar__actions">
+            <button id="rules-button" class="arena-button arena-button--quiet" type="button">Règles</button>
+            <button id="new-game-button" class="arena-button arena-button--quiet" type="button">Nouvelle partie</button>
+          </div>
+        </div>
+
+        <div class="game-table">
+          <section class="fighter fighter--opponent" aria-label="Adversaire">
+            <div class="fighter__identity">
+              <span id="opponent-avatar" class="fighter__avatar" aria-hidden="true">IA</span>
+              <div>
+                <p id="opponent-name" class="fighter__name">Adversaire</p>
+                <p id="opponent-deck" class="fighter__deck">Pioche : 0</p>
+              </div>
+            </div>
+            <div class="fighter__stats">
+              <div class="core-meter">
+                <span class="core-meter__icon" aria-hidden="true">◆</span>
+                <div>
+                  <span class="core-meter__label">Noyau</span>
+                  <strong id="opponent-health" class="core-meter__value">30</strong>
+                </div>
+              </div>
+              <div class="energy-meter">
+                <span class="energy-meter__label">Énergie</span>
+                <strong id="opponent-energy" class="energy-meter__value">0 / 0</strong>
+              </div>
+              <div id="opponent-hand" class="hidden-hand" aria-label="Main adverse"></div>
+            </div>
+          </section>
+
+          <div id="opponent-synergies" class="synergy-rack synergy-rack--opponent" aria-label="Synergies adverses"></div>
+          <div id="opponent-board" class="battle-row battle-row--opponent" aria-label="Unités adverses"></div>
+
+          <div class="arena-divider" aria-hidden="true">
+            <span></span>
+            <strong>Table de duel</strong>
+            <i class="arena-divider__crest">C</i>
+            <span></span>
+          </div>
+
+          <div id="player-board" class="battle-row battle-row--player" aria-label="Tes unités"></div>
+          <div id="player-synergies" class="synergy-rack synergy-rack--player" aria-label="Tes synergies"></div>
+
+          <section class="fighter fighter--player" aria-label="Joueur actif">
+            <div class="fighter__identity">
+              <span id="player-avatar" class="fighter__avatar fighter__avatar--player" aria-hidden="true">J1</span>
+              <div>
+                <p id="player-name" class="fighter__name">Joueur 1</p>
+                <p id="player-deck" class="fighter__deck">Pioche : 0</p>
+              </div>
+            </div>
+            <div class="fighter__stats">
+              <div class="core-meter">
+                <span class="core-meter__icon" aria-hidden="true">◆</span>
+                <div>
+                  <span class="core-meter__label">Noyau</span>
+                  <strong id="player-health" class="core-meter__value">30</strong>
+                </div>
+              </div>
+              <div class="energy-meter">
+                <span class="energy-meter__label">Énergie</span>
+                <strong id="player-energy" class="energy-meter__value">0 / 0</strong>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <section class="hand-zone" aria-label="Ta main">
+          <div class="hand-zone__top">
+            <div>
+              <span class="hand-zone__eyebrow">Ta main</span>
+              <strong id="hand-hint" class="hand-zone__hint">Sélectionne une carte puis une ligne.</strong>
+            </div>
+            <div class="hand-zone__actions">
+              <button id="overdrive-button" class="arena-button arena-button--overdrive" type="button">
+                Surcharge <span>+2 énergie</span>
+              </button>
+              <button id="end-turn-button" class="arena-button arena-button--primary" type="button">
+                Terminer le tour
+              </button>
+            </div>
+          </div>
+          <div id="player-hand" class="card-hand"></div>
+        </section>
+
+        <section class="battle-log" aria-label="Journal du combat">
+          <button id="log-toggle" class="battle-log__toggle" type="button" aria-expanded="false">
+            Journal du combat
+          </button>
+          <ol id="battle-log-list" class="battle-log__list" hidden></ol>
+        </section>
+      </section>
+    </main>
+
+    <div id="setup-modal" class="arena-modal" role="dialog" aria-modal="true" aria-labelledby="setup-title">
+      <div class="arena-modal__panel arena-modal__panel--setup">
+        <p class="arena-kicker">Prépare ton duel</p>
+        <h2 id="setup-title" class="arena-modal__title">Qui affronteras-tu ?</h2>
+        <p class="arena-modal__subtitle">
+          Les deux camps reçoivent un deck centré sur une collection de chaque saison pour construire de vraies compositions.
+        </p>
+
+        <div class="mode-picker" role="radiogroup" aria-label="Mode de jeu">
+          <button class="mode-card mode-card--selected" type="button" data-mode-choice="bot" role="radio" aria-checked="true">
+            <span class="mode-card__icon" aria-hidden="true">IA</span>
+            <strong>Contre un bot</strong>
+            <span>Un duel rapide avec trois difficultés.</span>
+          </button>
+          <button class="mode-card" type="button" data-mode-choice="local" role="radio" aria-checked="false">
+            <span class="mode-card__icon" aria-hidden="true">2P</span>
+            <strong>1 contre 1 local</strong>
+            <span>Passez-vous l’écran à chaque tour.</span>
+          </button>
+          <button class="mode-card" type="button" data-mode-choice="online" role="radio" aria-checked="false">
+            <span class="mode-card__icon" aria-hidden="true">WEB</span>
+            <strong>PvP en ligne</strong>
+            <span>Crée un salon et invite un adversaire avec un lien.</span>
+          </button>
+        </div>
+
+        <div id="difficulty-picker" class="difficulty-picker">
+          <label for="difficulty">Niveau du bot</label>
+          <select id="difficulty" class="difficulty-picker__select">
+            <option value="rookie">Apprenti</option>
+            <option value="tactician" selected>Tacticien</option>
+            <option value="champion">Champion</option>
+          </select>
+        </div>
+
+        <div id="online-picker" class="online-picker" hidden>
+          <label for="online-player-name">Ton pseudo</label>
+          <input id="online-player-name" class="online-picker__input" maxlength="24" value="Joueur" autocomplete="nickname" />
+          <div id="online-lobby" class="online-lobby" hidden>
+            <span id="online-status">Création du salon…</span>
+            <div class="online-lobby__invite">
+              <input id="online-invite-link" class="online-picker__input" readonly aria-label="Lien d’invitation" />
+              <button id="online-copy-link" class="arena-button arena-button--quiet" type="button">Copier</button>
+            </div>
+          </div>
+        </div>
+
+        <button id="start-game-button" class="arena-button arena-button--primary arena-button--wide" type="button">
+          Entrer dans l’arène
+        </button>
+      </div>
+    </div>
+
+    <div id="handoff-modal" class="arena-modal" role="dialog" aria-modal="true" aria-labelledby="handoff-title" hidden>
+      <div class="arena-modal__panel arena-modal__panel--handoff">
+        <span class="handoff-icon" aria-hidden="true">↻</span>
+        <h2 id="handoff-title" class="arena-modal__title">Passe l’écran</h2>
+        <p id="handoff-message" class="arena-modal__subtitle"></p>
+        <button id="handoff-button" class="arena-button arena-button--primary arena-button--wide" type="button">
+          Je suis prêt
+        </button>
+      </div>
+    </div>
+
+    <div id="result-modal" class="arena-modal" role="dialog" aria-modal="true" aria-labelledby="result-title" hidden>
+      <div class="arena-modal__panel arena-modal__panel--result">
+        <p id="result-kicker" class="arena-kicker">Duel terminé</p>
+        <h2 id="result-title" class="arena-modal__title"></h2>
+        <p id="result-message" class="arena-modal__subtitle"></p>
+        <div class="result-stats">
+          <div><span>Manches</span><strong id="result-rounds">0</strong></div>
+          <div><span>Cartes jouées</span><strong id="result-cards">0</strong></div>
+          <div><span>Dégâts max</span><strong id="result-damage">0</strong></div>
+        </div>
+        <button id="rematch-button" class="arena-button arena-button--primary arena-button--wide" type="button">
+          Rejouer
+        </button>
+      </div>
+    </div>
+
+    <div id="rules-modal" class="arena-modal" role="dialog" aria-modal="true" aria-labelledby="rules-title" hidden>
+      <div class="arena-modal__panel arena-modal__panel--rules">
+        <button class="arena-modal__close" type="button" data-close-rules aria-label="Fermer">×</button>
+        <p class="arena-kicker">Guide rapide</p>
+        <h2 id="rules-title" class="arena-modal__title">Comment gagner</h2>
+        <ul class="rules-list">
+          <li><strong>Déploie :</strong> sélectionne une carte, puis une des cinq places libres.</li>
+          <li><strong>Combats :</strong> à la fin du tour, chaque carte attaque en face d’elle ou frappe le noyau adverse.</li>
+          <li><strong>Survis :</strong> une carte reste en jeu tant qu’elle conserve des points de vie.</li>
+          <li><strong>Compose :</strong> réunis 2 ou 4 cartes partageant une collection ou un trait pour activer ses paliers.</li>
+          <li><strong>Trois saisons :</strong> chaque deck contient une collection de Saison 1, une de Saison 2 et une de Saison 3.</li>
+          <li><strong>PvP en ligne :</strong> crée un salon, partage son lien puis joue lorsque ton adversaire rejoint.</li>
+          <li><strong>Initiative :</strong> chaque joueur effectue d’abord un déploiement sans attaquer ; le premier joueur lance ensuite le premier assaut.</li>
+          <li><strong>Réplique :</strong> le second joueur reçoit une carte et une énergie bonus pour préparer sa défense.</li>
+          <li><strong>Légendaires :</strong> chaque carte légendaire possède un pouvoir propre inspiré de son identité.</li>
+          <li><strong>Accélère :</strong> utilise ta Surcharge une fois par partie pour obtenir +2 énergie ce tour.</li>
+        </ul>
+        <div class="trait-grid">
+          <div><span class="trait-dot trait-dot--character"></span><strong>Assaut</strong><small>Attaque</small></div>
+          <div><span class="trait-dot trait-dot--classic"></span><strong>Arcaniste</strong><small>Dégâts de zone</small></div>
+          <div><span class="trait-dot trait-dot--location"></span><strong>Rempart</strong><small>Vie</small></div>
+          <div><span class="trait-dot trait-dot--support"></span><strong>Soutien</strong><small>Soin d’équipe</small></div>
+          <div><span class="trait-dot trait-dot--marksman"></span><strong>Tireur</strong><small>Dégâts au noyau</small></div>
+          <div><span class="trait-dot trait-dot--survivor"></span><strong>Survivant</strong><small>Régénération</small></div>
+          <div><span class="trait-dot trait-dot--tactician"></span><strong>Stratège</strong><small>Énergie bonus</small></div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="src/duel.js"></script>
+  </body>
+</html>

@@ -1,8 +1,9 @@
 import season1Cards from './season1.js';
 import season2Cards from './season2.js';
+import season3Cards from './season3.js';
 import { rarityLabels, seasonLabels, typeLabels } from '../config/constants.js';
 
-const collections = [...season1Cards, ...season2Cards];
+const collections = [...season1Cards, ...season2Cards, ...season3Cards];
 const allCollections = collections;
 const collectionMeta = buildCollectionMeta(collections);
 
@@ -38,6 +39,8 @@ const cards = collections.flatMap((collection) => {
           collection.season_id,
           collection.collection_name,
           image,
+          collection.image_root,
+          collection.image_folder,
         ),
       };
     })
@@ -81,7 +84,7 @@ function createCardId(seasonId, collectionId, index) {
   return `${seasonId}-${collectionId}-${position}`;
 }
 
-function computeImagePath(seasonId, collectionName, image) {
+function computeImagePath(seasonId, collectionName, image, imageRoot, imageFolder) {
   if (!image) {
     return '';
   }
@@ -90,8 +93,9 @@ function computeImagePath(seasonId, collectionName, image) {
     return `cards/1/${image}`;
   }
 
-  const slug = slugify(collectionName);
-  return `cards/2/${slug}/${image}`;
+  const root = imageRoot ?? `cards/${seasonId}`;
+  const folder = imageFolder ?? slugify(collectionName);
+  return `${root}/${folder}/${image}`;
 }
 
 function slugify(input) {
