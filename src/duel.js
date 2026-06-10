@@ -10,6 +10,8 @@ const DECK_SIZE = 20;
 const MAX_HAND = 9;
 const MAX_ENERGY = 10;
 const RECORD_KEY = 'cartdle-arena-wins';
+const ONLINE_PEER_PREFIX = 'cartdle-arena-';
+const ONLINE_ROOM_PATTERN = /^[A-Z0-9]{6}$/;
 
 const RARITY_STATS = {
   common: { cost: 1, attack: 2, health: 3 },
@@ -100,7 +102,10 @@ const online = {
   version: -1,
   status: null,
   players: null,
-  pollingRoomId: null,
+  peer: null,
+  connection: null,
+  authorityState: null,
+  syncTimer: null,
   starting: false,
   syncPending: false,
 };
@@ -264,18 +269,13 @@ function initializeGame(mode, onlineNames = null) {
 }
 
 function initializeOnlineInvite() {
-  const roomId = new URLSearchParams(window.location.search).get('room')?.toUpperCase();
+  const roomId = getInvitationRoom();
   if (!roomId) {
     return;
   }
 
   selectMode('online');
-  const savedSession = readOnlineSession(roomId);
-  if (savedSession?.token) {
-    connectOnlineSession(roomId, savedSession.token, savedSession.playerIndex);
-  } else {
-    updateOnlineSetupButton();
-  }
+  updateOnlineSetupButton();
 }
 
 async function handleOnlineStart() {
@@ -293,57 +293,175 @@ async function handleOnlineStart() {
   elements.onlineStatus.textContent = 'Connexion au salon…';
 
   try {
-    const invitationRoom = new URLSearchParams(window.location.search).get('room')?.toUpperCase();
-    const endpoint = createOnlineApiEndpoint(invitationRoom, invitationRoom ? 'join' : null);
-    const payload = await requestOnlineRoom(endpoint, {
-      method: 'POST',
-      body: JSON.stringify({ name: playerName }),
-    });
-    connectOnlineSession(payload.roomId, payload.token, payload.playerIndex, payload);
+    const invitationRoom = getInvitationRoom();
+    if (invitationRoom) {
+      await joinPeerRoom(invitationRoom, playerName);
+    } else {
+      await createPeerRoom(playerName);
+    }
   } catch (error) {
     elements.onlineStatus.textContent = error.message;
     elements.startButton.disabled = false;
   }
 }
 
-function connectOnlineSession(roomId, token, playerIndex, initialPayload = null) {
+async function createPeerRoom(playerName) {
+  ensurePeerJsAvailable();
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    const roomId = createRoomCode();
+    try {
+      const peer = await openPeer(createPeerId(roomId));
+      online.peer = peer;
+      online.players = [sanitizeOnlineName(playerName, 'Joueur 1'), null];
+      online.authorityState = null;
+      bindHostPeer(peer);
+      connectOnlineSession(roomId, 0);
+      online.version = 0;
+      processOnlineRoom(createPeerRoomPayload(0), true);
+      return;
+    } catch (error) {
+      if (error.type !== 'unavailable-id') {
+        throw error;
+      }
+    }
+  }
+  throw new Error('Impossible de réserver un salon. Réessaie.');
+}
+
+async function joinPeerRoom(roomId, playerName) {
+  ensurePeerJsAvailable();
+  const peer = await openPeer();
+  const connection = peer.connect(createPeerId(roomId), {
+    metadata: { name: sanitizeOnlineName(playerName, 'Joueur 2') },
+    reliable: true,
+    serialization: 'json',
+  });
+  try {
+    await waitForPeerConnection(connection, peer);
+  } catch (error) {
+    peer.destroy();
+    throw error;
+  }
+  online.peer = peer;
+  online.connection = connection;
+  online.players = [null, sanitizeOnlineName(playerName, 'Joueur 2')];
+  bindPeerConnection(connection);
+  connectOnlineSession(roomId, 1);
+  connection.send({ type: 'hello', name: online.players[1] });
+  elements.onlineStatus.textContent = 'Connexion établie. En attente de l’hôte…';
+}
+
+function connectOnlineSession(roomId, playerIndex, initialPayload = null) {
   online.roomId = roomId;
-  online.token = token;
+  online.token = 'peer';
   online.playerIndex = playerIndex;
   online.version = -1;
   online.status = 'waiting';
   online.starting = false;
-  writeOnlineSession();
   setOnlineRoomUrl(roomId);
   elements.onlineLobby.hidden = false;
   elements.onlineInviteLink.value = createOnlineInviteLink(roomId);
   if (initialPayload) {
     processOnlineRoom(initialPayload);
   }
-  if (online.pollingRoomId !== roomId) {
-    online.pollingRoomId = roomId;
-    void pollOnlineRoom(roomId);
+}
+
+function bindHostPeer(peer) {
+  peer.on('connection', (connection) => {
+    if (online.connection?.open) {
+      connection.on('open', () => connection.close());
+      return;
+    }
+    connection.on('open', () => waitForGuestHello(connection));
+  });
+  peer.on('error', (error) => {
+    if (online.peer === peer) {
+      elements.onlineStatus.textContent = `Connexion interrompue : ${formatPeerError(error)}`;
+    }
+  });
+}
+
+function waitForGuestHello(connection) {
+  const timeout = window.setTimeout(() => {
+    connection.off('data', handleHello);
+    connection.close();
+  }, 5000);
+  const handleHello = (message) => {
+    if (message?.type !== 'hello') {
+      return;
+    }
+    window.clearTimeout(timeout);
+    connection.off('data', handleHello);
+    acceptGuestConnection(connection, message.name);
+  };
+  connection.on('data', handleHello);
+}
+
+function acceptGuestConnection(connection, guestName) {
+  online.connection = connection;
+  online.players[1] = sanitizeOnlineName(guestName ?? connection.metadata?.name, 'Joueur 2');
+  if (online.authorityState) {
+    online.authorityState.players[1].name = online.players[1];
+  }
+  online.status = online.authorityState
+    ? online.authorityState.gameOver ? 'finished' : 'playing'
+    : 'ready';
+  bindPeerConnection(connection);
+  processOnlineRoom(createPeerRoomPayload(0), true);
+  sendPeerRoom();
+}
+
+function bindPeerConnection(connection) {
+  connection.on('data', (message) => handlePeerMessage(message));
+  connection.on('close', () => handlePeerDisconnect(connection));
+  connection.on('error', (error) => {
+    if (online.connection === connection) {
+      elements.onlineStatus.textContent = `Connexion interrompue : ${formatPeerError(error)}`;
+    }
+  });
+}
+
+function handlePeerMessage(message) {
+  if (!message || typeof message !== 'object') {
+    return;
+  }
+  if (online.playerIndex === 0 && message.type === 'state') {
+    acceptPeerState(message.baseVersion, message.state, 1);
+    return;
+  }
+  if (online.playerIndex === 1 && message.type === 'room') {
+    processOnlineRoom(message.payload, true);
   }
 }
 
-async function pollOnlineRoom(roomId) {
-  while (online.roomId === roomId && online.token) {
-    try {
-      const payload = await requestOnlineRoom(createOnlineApiEndpoint(roomId));
-      processOnlineRoom(payload);
-    } catch (error) {
-      if (online.roomId === roomId) {
-        elements.onlineStatus.textContent = `Connexion interrompue : ${error.message}`;
-      }
-    }
-    await wait(750);
+function handlePeerDisconnect(connection) {
+  if (online.connection !== connection) {
+    return;
   }
-  if (online.pollingRoomId === roomId) {
-    online.pollingRoomId = null;
+  online.connection = null;
+  online.syncPending = false;
+  clearOnlineSyncTimer();
+  if (online.playerIndex === 0) {
+    online.status = 'waiting';
+    online.players[1] = null;
+    elements.onlineStatus.textContent = 'Adversaire déconnecté. Le lien permet de rejoindre à nouveau.';
+  } else {
+    const peer = online.peer;
+    online.status = 'waiting';
+    online.roomId = null;
+    online.token = null;
+    online.peer = null;
+    peer?.destroy();
+    elements.onlineStatus.textContent = 'Connexion à l’hôte interrompue. Clique sur Rejoindre le salon pour réessayer.';
+    updateOnlineSetupButton();
   }
+  render();
 }
 
 function processOnlineRoom(payload, forceState = false) {
+  if (!isValidOnlineRoomPayload(payload)) {
+    throw new Error('Réponse de salon invalide.');
+  }
   if (payload.roomId !== online.roomId || payload.version < online.version) {
     return;
   }
@@ -352,7 +470,8 @@ function processOnlineRoom(payload, forceState = false) {
   online.status = payload.status;
   online.players = payload.players;
   online.playerIndex = payload.playerIndex;
-  writeOnlineSession();
+  online.syncPending = false;
+  clearOnlineSyncTimer();
   updateOnlineLobby(payload);
 
   if (hasNewState) {
@@ -416,26 +535,70 @@ async function syncOnlineState() {
   online.syncPending = true;
   render();
   try {
-    const payload = await requestOnlineRoom(createOnlineApiEndpoint(online.roomId, 'sync'), {
-      method: 'POST',
-      body: JSON.stringify({
+    const snapshot = serializeOnlineState();
+    if (online.playerIndex === 0) {
+      acceptPeerState(online.version, snapshot, 0);
+      online.syncPending = false;
+    } else if (online.connection?.open) {
+      online.connection.send({
+        type: 'state',
         baseVersion: online.version,
-        state: serializeOnlineState(),
-      }),
-    });
-    processOnlineRoom(payload);
+        state: snapshot,
+      });
+      online.syncTimer = window.setTimeout(() => {
+        online.syncPending = false;
+        elements.statusMessage.textContent = 'L’hôte ne répond plus. Recharge le lien pour te reconnecter.';
+        render();
+      }, 5000);
+    } else {
+      throw new Error('La connexion avec l’hôte est fermée.');
+    }
   } catch (error) {
     elements.statusMessage.textContent = `Action non synchronisée : ${error.message}`;
-    try {
-      processOnlineRoom(await requestOnlineRoom(createOnlineApiEndpoint(online.roomId)), true);
-    } catch {
-      // The next polling cycle will retry the connection.
-    }
-  } finally {
     online.syncPending = false;
+  } finally {
     online.starting = false;
     render();
   }
+}
+
+function acceptPeerState(baseVersion, snapshot, senderIndex) {
+  const canPublish = baseVersion === online.version
+    && isValidPeerState(snapshot)
+    && (!online.authorityState || online.authorityState.gameOver
+      ? senderIndex === 0
+      : online.authorityState.activePlayer === senderIndex);
+  if (!canPublish) {
+    sendPeerRoom();
+    return;
+  }
+
+  snapshot.players.forEach((player, index) => {
+    player.name = online.players[index];
+  });
+  online.authorityState = snapshot;
+  online.version += 1;
+  online.status = snapshot.gameOver ? 'finished' : 'playing';
+  processOnlineRoom(createPeerRoomPayload(0), true);
+  sendPeerRoom();
+}
+
+function sendPeerRoom() {
+  if (online.connection?.open) {
+    online.connection.send({ type: 'room', payload: createPeerRoomPayload(1) });
+  }
+}
+
+function createPeerRoomPayload(playerIndex) {
+  return {
+    roomId: online.roomId,
+    playerIndex,
+    players: [...online.players],
+    status: online.status,
+    version: online.version,
+    state: online.authorityState,
+    token: 'peer',
+  };
 }
 
 function serializeOnlineState() {
@@ -465,30 +628,6 @@ function applyOnlineState(snapshot) {
   }
 }
 
-async function requestOnlineRoom(endpoint, options = {}) {
-  const headers = { 'Content-Type': 'application/json', ...(options.headers ?? {}) };
-  if (online.token) {
-    headers['X-Player-Token'] = online.token;
-  }
-  const response = await fetch(endpoint, { ...options, headers });
-  const payload = await response.json().catch(() => ({}));
-  if (!response.ok) {
-    throw new Error(payload.error ?? `Erreur réseau ${response.status}.`);
-  }
-  return payload;
-}
-
-function createOnlineApiEndpoint(roomId = null, action = null) {
-  const endpoint = new URL('../api/rooms.php', import.meta.url);
-  if (roomId) {
-    endpoint.searchParams.set('room', roomId);
-  }
-  if (action) {
-    endpoint.searchParams.set('action', action);
-  }
-  return endpoint.href;
-}
-
 function createOnlineInviteLink(roomId) {
   const invite = new URL(window.location.pathname, window.location.origin);
   invite.searchParams.set('room', roomId);
@@ -516,42 +655,162 @@ async function copyOnlineInviteLink() {
   }, 1400);
 }
 
-function writeOnlineSession() {
-  if (!online.roomId || !online.token) {
-    return;
-  }
-  sessionStorage.setItem(`cartdle-online-${online.roomId}`, JSON.stringify({
-    token: online.token,
-    playerIndex: online.playerIndex,
-  }));
-}
-
-function readOnlineSession(roomId) {
-  try {
-    return JSON.parse(sessionStorage.getItem(`cartdle-online-${roomId}`) ?? 'null');
-  } catch {
-    return null;
-  }
-}
-
 function resetOnlineSession() {
-  if (online.roomId) {
-    sessionStorage.removeItem(`cartdle-online-${online.roomId}`);
-  }
+  const connection = online.connection;
+  const peer = online.peer;
   online.roomId = null;
   online.token = null;
   online.playerIndex = null;
   online.version = -1;
   online.status = null;
   online.players = null;
-  online.pollingRoomId = null;
+  online.connection = null;
+  online.peer = null;
+  online.authorityState = null;
   online.starting = false;
   online.syncPending = false;
+  clearOnlineSyncTimer();
+  connection?.close();
+  peer?.destroy();
   const cleanUrl = new URL(window.location.href);
   cleanUrl.searchParams.delete('room');
   window.history.replaceState({}, '', cleanUrl);
   elements.onlineLobby.hidden = true;
   updateOnlineSetupButton();
+}
+
+function ensurePeerJsAvailable() {
+  if (typeof window.Peer !== 'function') {
+    throw new Error('Le service PvP n’a pas pu être chargé. Vérifie ta connexion puis recharge la page.');
+  }
+}
+
+function openPeer(peerId = null) {
+  return new Promise((resolve, reject) => {
+    const peer = peerId
+      ? new window.Peer(peerId, { debug: 1 })
+      : new window.Peer({ debug: 1 });
+    const handleOpen = () => {
+      window.clearTimeout(timeout);
+      peer.off('error', handleError);
+      resolve(peer);
+    };
+    const handleError = (error) => {
+      window.clearTimeout(timeout);
+      peer.off('open', handleOpen);
+      peer.destroy();
+      reject(error);
+    };
+    const timeout = window.setTimeout(() => {
+      peer.off('open', handleOpen);
+      peer.off('error', handleError);
+      peer.destroy();
+      reject(new Error('Le service PvP ne répond pas.'));
+    }, 8000);
+    peer.once('open', handleOpen);
+    peer.once('error', handleError);
+  });
+}
+
+function waitForPeerConnection(connection, peer) {
+  return new Promise((resolve, reject) => {
+    const handleOpen = () => {
+      window.clearTimeout(timeout);
+      connection.off('error', handleError);
+      peer.off('error', handlePeerError);
+      resolve();
+    };
+    const handleError = (error) => {
+      window.clearTimeout(timeout);
+      connection.off('open', handleOpen);
+      peer.off('error', handlePeerError);
+      reject(new Error(formatPeerError(error)));
+    };
+    const handlePeerError = (error) => {
+      window.clearTimeout(timeout);
+      connection.off('open', handleOpen);
+      connection.off('error', handleError);
+      reject(new Error(formatPeerError(error)));
+    };
+    const timeout = window.setTimeout(() => {
+      connection.off('open', handleOpen);
+      connection.off('error', handleError);
+      peer.off('error', handlePeerError);
+      connection.close();
+      reject(new Error('Salon introuvable ou hôte hors ligne.'));
+    }, 8000);
+    connection.once('open', handleOpen);
+    connection.once('error', handleError);
+    peer.once('error', handlePeerError);
+  });
+}
+
+function getInvitationRoom() {
+  const roomId = new URLSearchParams(window.location.search).get('room')?.toUpperCase() ?? null;
+  if (!roomId || ONLINE_ROOM_PATTERN.test(roomId)) {
+    return roomId;
+  }
+  const cleanUrl = new URL(window.location.href);
+  cleanUrl.searchParams.delete('room');
+  window.history.replaceState({}, '', cleanUrl);
+  return null;
+}
+
+function createRoomCode() {
+  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  return Array.from({ length: 6 }, () => alphabet[Math.floor(Math.random() * alphabet.length)]).join('');
+}
+
+function createPeerId(roomId) {
+  return `${ONLINE_PEER_PREFIX}${roomId.toLowerCase()}`;
+}
+
+function sanitizeOnlineName(name, fallback) {
+  return String(name ?? '').trim().replace(/\s+/g, ' ').slice(0, 24) || fallback;
+}
+
+function isValidOnlineRoomPayload(payload) {
+  return Boolean(
+    payload
+      && ONLINE_ROOM_PATTERN.test(payload.roomId)
+      && (payload.playerIndex === 0 || payload.playerIndex === 1)
+      && Array.isArray(payload.players)
+      && payload.players.length === 2
+      && Number.isInteger(payload.version)
+      && payload.version >= 0
+      && ['waiting', 'ready', 'playing', 'finished'].includes(payload.status),
+  );
+}
+
+function isValidPeerState(snapshot) {
+  return Boolean(
+    snapshot
+      && snapshot.mode === 'online'
+      && Array.isArray(snapshot.players)
+      && snapshot.players.length === 2
+      && snapshot.players.every((player) => player && typeof player.name === 'string')
+      && (snapshot.activePlayer === 0 || snapshot.activePlayer === 1)
+      && typeof snapshot.gameOver === 'boolean'
+      && Array.isArray(snapshot.log)
+      && snapshot.stats,
+  );
+}
+
+function clearOnlineSyncTimer() {
+  if (online.syncTimer) {
+    window.clearTimeout(online.syncTimer);
+    online.syncTimer = null;
+  }
+}
+
+function formatPeerError(error) {
+  if (error?.type === 'peer-unavailable') {
+    return 'Salon introuvable ou hôte hors ligne.';
+  }
+  if (error?.type === 'network' || error?.type === 'server-error') {
+    return 'Le service PvP est momentanément indisponible.';
+  }
+  return error?.message || 'Erreur de connexion PvP.';
 }
 
 function createPlayer(name, deckTemplates, healthBonus = 0) {
