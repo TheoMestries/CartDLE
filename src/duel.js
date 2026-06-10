@@ -2,6 +2,7 @@ import cards from './data/index.js';
 import { getArenaCostCurve, selectBalancedFeaturedCollections } from './duelDeck.js';
 import { getLegendaryEffect } from './duelLegendaries.js';
 import { TRAIT_DEFINITIONS, getTraitTier, inferCardTraits } from './duelTraits.js';
+import { acceptPeerPacket, createPeerPackets } from './peerTransport.js';
 
 const BOARD_SIZE = 5;
 const STARTING_HEALTH = 30;
@@ -105,6 +106,7 @@ const online = {
   peer: null,
   connection: null,
   authorityState: null,
+  incomingPackets: new Map(),
   syncTimer: null,
   roomRequestTimer: null,
   starting: false,
@@ -335,7 +337,7 @@ async function joinPeerRoom(roomId, playerName) {
   const connection = peer.connect(createPeerId(roomId), {
     metadata: { name: sanitizeOnlineName(playerName, 'Joueur 2') },
     reliable: true,
-    serialization: 'binary',
+    serialization: 'json',
   });
   try {
     await waitForPeerConnection(connection, peer);
@@ -360,6 +362,7 @@ function connectOnlineSession(roomId, playerIndex, initialPayload = null) {
   online.version = -1;
   online.status = 'waiting';
   online.starting = false;
+  online.incomingPackets.clear();
   setOnlineRoomUrl(roomId);
   elements.onlineLobby.hidden = false;
   elements.onlineInviteLink.value = createOnlineInviteLink(roomId);
@@ -409,18 +412,41 @@ function acceptGuestConnection(connection, guestName) {
     ? online.authorityState.gameOver ? 'finished' : 'playing'
     : 'ready';
   bindPeerConnection(connection);
+  sendPeerMeta();
+  sendPeerRoom();
   processOnlineRoom(createPeerRoomPayload(0), true);
   sendPeerRoomRepeatedly();
 }
 
 function bindPeerConnection(connection) {
-  connection.on('data', (message) => handlePeerMessage(message));
+  connection.on('data', (message) => handlePeerTransportMessage(message));
   connection.on('close', () => handlePeerDisconnect(connection));
   connection.on('error', (error) => {
     if (online.connection === connection) {
       elements.onlineStatus.textContent = `Connexion interrompue : ${formatPeerError(error)}`;
     }
   });
+}
+
+function handlePeerTransportMessage(message) {
+  try {
+    if (message?.type !== 'peer-packet') {
+      handlePeerMessage(message);
+      return;
+    }
+    const completeMessage = acceptPeerPacket(online.incomingPackets, message);
+    if (completeMessage) {
+      handlePeerMessage(completeMessage);
+    }
+  } catch (error) {
+    online.incomingPackets.clear();
+    elements.onlineStatus.textContent = `Transfert PvP interrompu : ${error.message}`;
+    if (online.playerIndex === 1) {
+      startRoomRequests();
+    } else {
+      sendPeerRoomRepeatedly();
+    }
+  }
 }
 
 function handlePeerMessage(message) {
@@ -433,7 +459,12 @@ function handlePeerMessage(message) {
       return;
     }
     if (online.playerIndex === 0 && message.type === 'request-room') {
+      sendPeerMeta();
       sendPeerRoom();
+      return;
+    }
+    if (online.playerIndex === 1 && message.type === 'room-meta') {
+      processOnlineRoom(message.payload, false);
       return;
     }
     if (online.playerIndex === 1 && message.type === 'room') {
@@ -445,7 +476,9 @@ function handlePeerMessage(message) {
       return;
     }
     if (online.playerIndex === 0 && message.type === 'room-received') {
-      clearRoomRequestTimer();
+      if (message.version === online.version) {
+        clearRoomRequestTimer();
+      }
     }
   } catch (error) {
     elements.onlineStatus.textContent = `État reçu invalide : ${error.message}`;
@@ -463,6 +496,7 @@ function handlePeerDisconnect(connection) {
   }
   online.connection = null;
   online.syncPending = false;
+  online.incomingPackets.clear();
   clearOnlineSyncTimer();
   clearRoomRequestTimer();
   if (online.playerIndex === 0) {
@@ -564,7 +598,7 @@ async function syncOnlineState() {
       acceptPeerState(online.version, snapshot, 0);
       online.syncPending = false;
     } else if (online.connection?.open) {
-      online.connection.send({
+      sendLargePeerMessage({
         type: 'state',
         baseVersion: online.version,
         state: snapshot,
@@ -608,9 +642,27 @@ function acceptPeerState(baseVersion, snapshot, senderIndex) {
 }
 
 function sendPeerRoom() {
-  if (online.connection?.open) {
-    online.connection.send({ type: 'room', payload: createPeerRoomPayload(1) });
+  sendLargePeerMessage({ type: 'room', payload: createPeerRoomPayload(1) });
+}
+
+function sendPeerMeta() {
+  if (!online.connection?.open) {
+    return;
   }
+  online.connection.send({
+    type: 'room-meta',
+    payload: {
+      ...createPeerRoomPayload(1),
+      state: null,
+    },
+  });
+}
+
+function sendLargePeerMessage(message) {
+  if (!online.connection?.open) {
+    return;
+  }
+  createPeerPackets(message).forEach((packet) => online.connection.send(packet));
 }
 
 function sendPeerRoomRepeatedly() {
@@ -715,6 +767,7 @@ function resetOnlineSession() {
   online.connection = null;
   online.peer = null;
   online.authorityState = null;
+  online.incomingPackets.clear();
   online.starting = false;
   online.syncPending = false;
   clearOnlineSyncTimer();
