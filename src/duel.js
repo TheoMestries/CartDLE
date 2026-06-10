@@ -106,6 +106,7 @@ const online = {
   connection: null,
   authorityState: null,
   syncTimer: null,
+  roomRequestTimer: null,
   starting: false,
   syncPending: false,
 };
@@ -334,7 +335,7 @@ async function joinPeerRoom(roomId, playerName) {
   const connection = peer.connect(createPeerId(roomId), {
     metadata: { name: sanitizeOnlineName(playerName, 'Joueur 2') },
     reliable: true,
-    serialization: 'json',
+    serialization: 'binary',
   });
   try {
     await waitForPeerConnection(connection, peer);
@@ -348,6 +349,7 @@ async function joinPeerRoom(roomId, playerName) {
   bindPeerConnection(connection);
   connectOnlineSession(roomId, 1);
   connection.send({ type: 'hello', name: online.players[1] });
+  startRoomRequests();
   elements.onlineStatus.textContent = 'Connexion établie. En attente de l’hôte…';
 }
 
@@ -408,7 +410,7 @@ function acceptGuestConnection(connection, guestName) {
     : 'ready';
   bindPeerConnection(connection);
   processOnlineRoom(createPeerRoomPayload(0), true);
-  sendPeerRoom();
+  sendPeerRoomRepeatedly();
 }
 
 function bindPeerConnection(connection) {
@@ -422,15 +424,36 @@ function bindPeerConnection(connection) {
 }
 
 function handlePeerMessage(message) {
-  if (!message || typeof message !== 'object') {
-    return;
-  }
-  if (online.playerIndex === 0 && message.type === 'state') {
-    acceptPeerState(message.baseVersion, message.state, 1);
-    return;
-  }
-  if (online.playerIndex === 1 && message.type === 'room') {
-    processOnlineRoom(message.payload, true);
+  try {
+    if (!message || typeof message !== 'object') {
+      return;
+    }
+    if (online.playerIndex === 0 && message.type === 'state') {
+      acceptPeerState(message.baseVersion, message.state, 1);
+      return;
+    }
+    if (online.playerIndex === 0 && message.type === 'request-room') {
+      sendPeerRoom();
+      return;
+    }
+    if (online.playerIndex === 1 && message.type === 'room') {
+      processOnlineRoom(message.payload, true);
+      online.connection?.send({ type: 'room-received', version: message.payload.version });
+      if (message.payload.state) {
+        clearRoomRequestTimer();
+      }
+      return;
+    }
+    if (online.playerIndex === 0 && message.type === 'room-received') {
+      clearRoomRequestTimer();
+    }
+  } catch (error) {
+    elements.onlineStatus.textContent = `État reçu invalide : ${error.message}`;
+    if (online.playerIndex === 1) {
+      startRoomRequests();
+    } else {
+      sendPeerRoomRepeatedly();
+    }
   }
 }
 
@@ -441,6 +464,7 @@ function handlePeerDisconnect(connection) {
   online.connection = null;
   online.syncPending = false;
   clearOnlineSyncTimer();
+  clearRoomRequestTimer();
   if (online.playerIndex === 0) {
     online.status = 'waiting';
     online.players[1] = null;
@@ -580,13 +604,37 @@ function acceptPeerState(baseVersion, snapshot, senderIndex) {
   online.version += 1;
   online.status = snapshot.gameOver ? 'finished' : 'playing';
   processOnlineRoom(createPeerRoomPayload(0), true);
-  sendPeerRoom();
+  sendPeerRoomRepeatedly();
 }
 
 function sendPeerRoom() {
   if (online.connection?.open) {
     online.connection.send({ type: 'room', payload: createPeerRoomPayload(1) });
   }
+}
+
+function sendPeerRoomRepeatedly() {
+  clearRoomRequestTimer();
+  sendPeerRoom();
+  let attempts = 0;
+  online.roomRequestTimer = window.setInterval(() => {
+    attempts += 1;
+    sendPeerRoom();
+    if (attempts >= 8) {
+      clearRoomRequestTimer();
+    }
+  }, 500);
+}
+
+function startRoomRequests() {
+  clearRoomRequestTimer();
+  const requestRoom = () => {
+    if (online.connection?.open) {
+      online.connection.send({ type: 'request-room' });
+    }
+  };
+  requestRoom();
+  online.roomRequestTimer = window.setInterval(requestRoom, 600);
 }
 
 function createPeerRoomPayload(playerIndex) {
@@ -670,6 +718,7 @@ function resetOnlineSession() {
   online.starting = false;
   online.syncPending = false;
   clearOnlineSyncTimer();
+  clearRoomRequestTimer();
   connection?.close();
   peer?.destroy();
   const cleanUrl = new URL(window.location.href);
@@ -800,6 +849,13 @@ function clearOnlineSyncTimer() {
   if (online.syncTimer) {
     window.clearTimeout(online.syncTimer);
     online.syncTimer = null;
+  }
+}
+
+function clearRoomRequestTimer() {
+  if (online.roomRequestTimer) {
+    window.clearInterval(online.roomRequestTimer);
+    online.roomRequestTimer = null;
   }
 }
 
