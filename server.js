@@ -53,8 +53,9 @@ const server = http.createServer((req, res) => {
   const requestUrl = new URL(req.url, `http://${req.headers.host}`);
   const urlPath = decodeURIComponent(requestUrl.pathname);
 
-  if (urlPath === '/api/rooms' || urlPath.startsWith('/api/rooms/')) {
-    handleRoomApi(req, res, urlPath);
+  const roomApiPath = normalizeRoomApiPath(requestUrl);
+  if (roomApiPath) {
+    handleRoomApi(req, res, roomApiPath);
     return;
   }
 
@@ -145,7 +146,7 @@ async function handleRoomApi(req, res, urlPath) {
       return;
     }
 
-    if (req.method === 'PUT') {
+    if (req.method === 'PUT' || req.method === 'POST') {
       const body = await readJsonBody(req);
       if (!Number.isInteger(body?.baseVersion) || body.baseVersion !== room.version) {
         sendJson(res, 409, { error: 'La partie a évolué.', version: room.version });
@@ -361,4 +362,19 @@ function sendJson(res, status, payload) {
     'Cache-Control': 'no-store',
   });
   res.end(JSON.stringify(payload));
+}
+
+function normalizeRoomApiPath(requestUrl) {
+  if (requestUrl.pathname === '/api/rooms' || requestUrl.pathname.startsWith('/api/rooms/')) {
+    return requestUrl.pathname;
+  }
+  if (requestUrl.pathname !== '/api/rooms.php') {
+    return null;
+  }
+  const roomId = requestUrl.searchParams.get('room');
+  if (!roomId) {
+    return '/api/rooms';
+  }
+  const action = requestUrl.searchParams.get('action');
+  return `/api/rooms/${roomId}${action === 'join' ? '/join' : ''}`;
 }

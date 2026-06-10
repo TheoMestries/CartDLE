@@ -294,7 +294,7 @@ async function handleOnlineStart() {
 
   try {
     const invitationRoom = new URLSearchParams(window.location.search).get('room')?.toUpperCase();
-    const endpoint = invitationRoom ? `/api/rooms/${invitationRoom}/join` : '/api/rooms';
+    const endpoint = createOnlineApiEndpoint(invitationRoom, invitationRoom ? 'join' : null);
     const payload = await requestOnlineRoom(endpoint, {
       method: 'POST',
       body: JSON.stringify({ name: playerName }),
@@ -329,7 +329,7 @@ function connectOnlineSession(roomId, token, playerIndex, initialPayload = null)
 async function pollOnlineRoom(roomId) {
   while (online.roomId === roomId && online.token) {
     try {
-      const payload = await requestOnlineRoom(`/api/rooms/${roomId}`);
+      const payload = await requestOnlineRoom(createOnlineApiEndpoint(roomId));
       processOnlineRoom(payload);
     } catch (error) {
       if (online.roomId === roomId) {
@@ -416,8 +416,8 @@ async function syncOnlineState() {
   online.syncPending = true;
   render();
   try {
-    const payload = await requestOnlineRoom(`/api/rooms/${online.roomId}`, {
-      method: 'PUT',
+    const payload = await requestOnlineRoom(createOnlineApiEndpoint(online.roomId, 'sync'), {
+      method: 'POST',
       body: JSON.stringify({
         baseVersion: online.version,
         state: serializeOnlineState(),
@@ -427,7 +427,7 @@ async function syncOnlineState() {
   } catch (error) {
     elements.statusMessage.textContent = `Action non synchronisée : ${error.message}`;
     try {
-      processOnlineRoom(await requestOnlineRoom(`/api/rooms/${online.roomId}`), true);
+      processOnlineRoom(await requestOnlineRoom(createOnlineApiEndpoint(online.roomId)), true);
     } catch {
       // The next polling cycle will retry the connection.
     }
@@ -476,6 +476,17 @@ async function requestOnlineRoom(endpoint, options = {}) {
     throw new Error(payload.error ?? `Erreur réseau ${response.status}.`);
   }
   return payload;
+}
+
+function createOnlineApiEndpoint(roomId = null, action = null) {
+  const endpoint = new URL('../api/rooms.php', import.meta.url);
+  if (roomId) {
+    endpoint.searchParams.set('room', roomId);
+  }
+  if (action) {
+    endpoint.searchParams.set('action', action);
+  }
+  return endpoint.href;
 }
 
 function createOnlineInviteLink(roomId) {

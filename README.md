@@ -9,8 +9,9 @@ la saison, la collection, le type (personnage ou lieu), la rareté et la taille 
 2. Utilisez la zone de saisie pour rechercher une carte (la liste déroulante propose toutes les cartes disponibles).
 3. Comparez les indices pour approcher de la bonne carte. Une nouvelle carte est proposée chaque jour.
 
-Pour utiliser le PvP en ligne, lancez plutôt `npm start`, puis ouvrez `http://localhost:3002/duel.html`. L’adresse
-utilisée dans le lien d’invitation doit être accessible par les deux joueurs.
+Pour utiliser le PvP en ligne en local, servez le projet avec MAMP afin que `api/rooms.php` soit exécuté. Le serveur
+Node lancé avec `npm start` reste également compatible. L’adresse utilisée dans le lien d’invitation doit être
+accessible par les deux joueurs.
 
 ## Indices disponibles
 
@@ -41,4 +42,4 @@ noyau adverse à zéro.
 - Chaque carte légendaire possède un pouvoir unique inspiré de son identité et de son univers.
 - La Surcharge donne `+2` énergie une fois par partie.
 - Une pioche vide inflige des dégâts de fatigue croissants.
-- Les salons PvP expirent après six heures d’inactivité et sont réinitialisés si le serveur redémarre.
+- Les salons PvP expirent après six heures d’inactivité.
